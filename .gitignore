@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.venv/
+
+# Data
+data/
+*.csv
+*.h5
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# uv
+uv.lock

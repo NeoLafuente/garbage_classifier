@@ -154,45 +154,6 @@ wheels = [
 ]
 
 [[package]]
-name = "code"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "gdown" },
-    { name = "lightning" },
-    { name = "matplotlib" },
-    { name = "numba" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pyarrow" },
-    { name = "seaborn" },
-    { name = "tables" },
-    { name = "tensorboard" },
-    { name = "tensorflow" },
-    { name = "torch" },
-    { name = "torchinfo" },
-    { name = "torchvision" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "gdown" },
-    { name = "lightning", specifier = ">=2.5.2" },
-    { name = "matplotlib", specifier = ">=3.10.6" },
-    { name = "numba", specifier = ">=0.61.2" },
-    { name = "numpy", specifier = "<2" },
-    { name = "pandas", specifier = ">=2.3.2" },
-    { name = "pyarrow", specifier = ">=21.0.0" },
-    { name = "seaborn", specifier = ">=0.13.2" },
-    { name = "tables", specifier = ">=3.10.2" },
-    { name = "tensorboard", specifier = ">=2.18.0" },
-    { name = "tensorflow", specifier = "==2.18.*" },
-    { name = "torch", specifier = ">=2.7.1" },
-    { name = "torchinfo", specifier = ">=1.8.0" },
-    { name = "torchvision", specifier = ">=0.22.1" },
-]
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -310,6 +271,45 @@ wheels = [
 [package.optional-dependencies]
 http = [
     { name = "aiohttp" },
+]
+
+[[package]]
+name = "garbage-classifier"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "gdown" },
+    { name = "lightning" },
+    { name = "matplotlib" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "seaborn" },
+    { name = "tables" },
+    { name = "tensorboard" },
+    { name = "tensorflow" },
+    { name = "torch" },
+    { name = "torchinfo" },
+    { name = "torchvision" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "gdown" },
+    { name = "lightning", specifier = ">=2.5.2" },
+    { name = "matplotlib", specifier = ">=3.10.6" },
+    { name = "numba", specifier = ">=0.61.2" },
+    { name = "numpy", specifier = "<2" },
+    { name = "pandas", specifier = ">=2.3.2" },
+    { name = "pyarrow", specifier = ">=21.0.0" },
+    { name = "seaborn", specifier = ">=0.13.2" },
+    { name = "tables", specifier = ">=3.10.2" },
+    { name = "tensorboard", specifier = ">=2.18.0" },
+    { name = "tensorflow", specifier = "==2.18.*" },
+    { name = "torch", specifier = ">=2.7.1" },
+    { name = "torchinfo", specifier = ">=1.8.0" },
+    { name = "torchvision", specifier = ">=0.22.1" },
 ]
 
 [[package]]

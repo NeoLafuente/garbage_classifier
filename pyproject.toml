@@ -1,5 +1,5 @@
 [project]
-name = "code"
+name = "garbage_classifier"
 version = "0.1.0"
 description = "Sample environment for testing Pytorch and TensorFlow"
 readme = "README.md"
