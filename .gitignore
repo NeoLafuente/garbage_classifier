@@ -10,6 +10,8 @@ __pycache__/
 data/
 *.csv
 *.h5
+*.zip
+*.jpg
 
 # Logs
 *.log
