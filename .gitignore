@@ -13,6 +13,9 @@ data/
 *.zip
 *.jpg
 
+# Data raw
+data/raw/*
+
 # Logs
 *.log
 
@@ -22,3 +25,11 @@ data/
 
 # uv
 uv.lock
+
+# Models
+models/
+*.pth
+
+# Source
+source/modeling/
+*.jpg
