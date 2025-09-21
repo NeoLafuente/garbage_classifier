@@ -1,0 +1,37 @@
+.
+├── data
+│   ├── interim
+│   │   └── dummy.txt
+│   ├── processed
+│   │   └── dummy.txt
+│   └── raw
+│       ├── dummy.txt
+│       └── sample_dataset
+│           ├── cardboard
+│           ├── glass
+│           ├── metal
+│           ├── paper
+│           ├── plastic
+│           └── trash
+├── models
+│   ├── dummy.txt
+│   └── model_resnet18_garbage.ckpt
+├── notebooks
+│   └── create_sample_dataset.ipynb
+├── pyproject.toml
+├── README.md
+├── reports
+│   └── figures
+│       └── dummy.txt
+├── source
+│   ├── predict.py
+│   ├── train.py
+│   └── utils
+│       ├── config.py
+│       └── custom_classes
+│           ├── GarbageClassifier.py
+│           └── GarbageDataModule.py
+├── tree.txt
+└── uv.lock
+
+19 directories, 16 files
