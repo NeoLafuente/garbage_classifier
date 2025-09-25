@@ -33,3 +33,4 @@ models/
 # Source
 source/modeling/
 *.jpg
+notebooks/.ipynb_checkpoints/
