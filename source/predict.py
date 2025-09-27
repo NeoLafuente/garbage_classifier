@@ -22,8 +22,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 
 print(f"Loading model...")
-# model = GarbageClassifier(num_classes=cfg.NUM_CLASSES)
-# model.load_state_dict(torch.load(cfg.MODEL_PATH, map_location=device))
 model = GarbageClassifier.load_from_checkpoint(cfg.MODEL_PATH, num_classes = cfg.NUM_CLASSES)
 
 model = model.to(device)

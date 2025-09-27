@@ -13,7 +13,7 @@ class GarbageDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-    
+        
     def setup(self, stage=None):
         # Load full dataset
         full_dataset = datasets.ImageFolder(cfg.DATASET_PATH, transform=self.transform)

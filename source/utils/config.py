@@ -1,4 +1,5 @@
-DATASET_PATH = '../data/raw/sample_dataset/'
+DATASET_PATH = '../data/i/raw/sample_dataset/'
+LOSS_CURVES_PATH = '../data/o/loss_curves/'
 MODEL_PATH = '../models/model_resnet18_garbage.ckpt'
 SAMPLE_IMG_PATH = 'sample.jpg'
 CLASS_NAMES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]

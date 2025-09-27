@@ -36,9 +36,11 @@ class GarbageClassifier(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         xb, yb = batch
         out = self(xb)
+        loss = self.loss_fn(out, yb)
         preds = out.argmax(dim=1)
         acc = (preds == yb).float().mean()
-        self.log('val_acc', acc, prog_bar=True)
+        self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True)
+        self.log('val_acc', acc, on_step=True, on_epoch=True, prog_bar=True)
         return acc
 
     def configure_optimizers(self):
