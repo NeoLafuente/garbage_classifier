@@ -34,3 +34,6 @@ models/
 source/modeling/
 *.jpg
 notebooks/.ipynb_checkpoints/
+
+# +Source
+source/lightning_logs/*
