@@ -12,9 +12,10 @@ data/
 *.h5
 *.zip
 *.jpg
+*.png
 
 # Data raw
-data/raw/*
+data/i/*
 
 # Logs
 *.log
@@ -36,4 +37,4 @@ source/modeling/
 notebooks/.ipynb_checkpoints/
 
 # +Source
-source/lightning_logs/*
+source/lightning_logs/
