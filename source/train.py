@@ -35,7 +35,7 @@ if __name__ == "__main__":
     loss_curve_callback = LossCurveCallback(save_dir=cfg.LOSS_CURVES_PATH)
 
     trainer = pl.Trainer(
-        max_epochs=3, 
+        max_epochs=10, 
         accelerator="auto", 
         devices=1,
         callbacks=[loss_curve_callback],
