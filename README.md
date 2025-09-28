@@ -6,11 +6,16 @@
 .
 ├── data
 │   ├── interim
-│   │   └── dummy.txt
 │   ├── processed
-│   │   └── dummy.txt
 │   └── raw
-│       ├── dummy.txt
+│       ├── Garbage_Dataset_Classification
+│       │   └── images
+│       │       ├── cardboard
+│       │       ├── glass
+│       │       ├── metal
+│       │       ├── paper
+│       │       ├── plastic
+│       │       └── trash
 │       └── sample_dataset
 │           ├── cardboard
 │           ├── glass
@@ -19,25 +24,31 @@
 │           ├── plastic
 │           └── trash
 ├── models
-│   ├── dummy.txt
-│   └── model_resnet18_garbage.ckpt
+│   ├── performance
+│   │   └── loss_curves
+│   └── weights
+│       └── model_resnet18_garbage.ckpt
 ├── notebooks
-│   └── create_sample_dataset.ipynb
+│   ├── create_sample_dataset.ipynb
+│   ├── dataset_exploration.ipynb
+│   └── performance_analysis.ipynb
 ├── pyproject.toml
 ├── README.md
 ├── reports
-│   └── figures
-│       └── dummy.txt
-├── source
-│   ├── predict.py
-│   ├── train.py
-│   └── utils
-│       ├── config.py
-│       └── custom_classes
-│           ├── GarbageClassifier.py
-│           └── GarbageDataModule.py
-├── tree.txt
-└── uv.lock
+│   ├── compiled
+│   ├── figures
+│   │   ├── EDA
+│   │   └── performance
+│   └── main.tex
+└── source
+    ├── predict.py
+    ├── train.py
+    └── utils
+        ├── config.py
+        └── custom_classes
+            ├── GarbageClassifier.py
+            ├── GarbageDataModule.py
+            └── LossCurveCallback.py
 ```
 
 `dummy.txt` files are just placeholders so GitHub keeps the folder structure.
@@ -64,18 +75,17 @@ uv sync
 
 ## Dataset
 
-The notebooks/create_sample_dataset.ipynb notebook is used to set up the dataset if the sample_dataset folder 
-does not exist. So, This notebook:
-- Downloads the [Garbage Classification Dataset](https://www.kaggle.com/datasets/zlatan599/garbage-dataset-classification?resource=download) from Kaggle.
+The notebook `notebooks/create_sample_dataset.ipynb` prepares the dataset if the `sample_dataset` folder does not exist. It:
+- Downloads the [Garbage Classification Dataset](https://www.kaggle.com/datasets/zlatan599/garbage-dataset-classification?resource=download).
 - Creates the `sample_dataset` folder inside `data/raw`.
-- Reduces the dataset size (fewer images) for easier experimentation.
- 
+- Reduces dataset size for lightweight experimentation.
+
 ---
 
 ## Training
 
 - **`source/train.py`**  
-  Trains the **`GarbageClassifier`**, which is a **ResNet18** model implemented in PyTorch Lightning.  
+  Trains the **`GarbageClassifier`** (ResNet18 with PyTorch Lightning).
 
 Run training with:
 
@@ -83,10 +93,10 @@ Run training with:
 uv run source/train.py
 ```
 
-After training, the model checkpoint will be saved in:
+The model checkpoint will be saved at:
 
 ```
-models/model_resnet18_garbage.ckpt
+models/weights/model_resnet18_garbage.ckpt
 ```
 
 ---
@@ -94,7 +104,7 @@ models/model_resnet18_garbage.ckpt
 ## Prediction
 
 - **`source/predict.py`**  
-  Loads the trained model (`model_resnet18_garbage.ckpt`) and classifies an image.
+  Loads the trained model and classifies an image.
 
 Usage:
 
@@ -108,7 +118,7 @@ Examples:
 uv run source/predict.py img.jpg
 ```
 
-If no argument is provided, it will use the sample image path defined in `config.py`.
+If no path is given, the default image in `config.py` is used.
 
 ---
 
@@ -116,7 +126,28 @@ If no argument is provided, it will use the sample image path defined in `config
 
 This project is built with:
 
-- **[PyTorch Lightning](https://www.pytorchlightning.ai/)** for training and organizing the deep learning pipeline.
+- **PyTorch Lightning** for modular training.
 - **ResNet18** as the backbone model for garbage classification.
 
 ---
+
+## Reports
+
+- **`reports/main.tex`**: Main LaTeX report.  
+- **`reports/figures`**: Stores plots from EDA and model performance.  
+- **`reports/compiled`**: Place to store compiled report PDFs.  
+
+---
+
+## Notebooks
+
+- **`dataset_exploration.ipynb`**: Exploratory Data Analysis (EDA).  
+- **`performance_analysis.ipynb`**: Model evaluation and error analysis.  
+- **`create_sample_dataset.ipynb`**: Scripted dataset preparation.  
+
+---
+
+## Models
+
+- **`models/weights`**: Stores trained checkpoints.  
+- **`models/performance/loss_curves`**: Training/validation loss curves.  

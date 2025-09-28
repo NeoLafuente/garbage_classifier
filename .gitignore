@@ -7,15 +7,11 @@ __pycache__/
 .venv/
 
 # Data
-data/
-*.csv
-*.h5
-*.zip
-*.jpg
-*.png
-
-# Data raw
-data/i/*
+data/**/*.csv
+data/**/*.h5
+data/**/*.zip
+data/**/*.jpg
+data/**/*.png
 
 # Logs
 *.log
@@ -28,13 +24,19 @@ data/i/*
 uv.lock
 
 # Models
-models/
-*.pth
+models/**/*.png
+models/**/*.pdf
+models/**/*.jpg
 
 # Source
-source/modeling/
-*.jpg
-notebooks/.ipynb_checkpoints/
+source/modeling/**/*.jpg
 
 # +Source
 source/lightning_logs/
+
+# Notebooks
+notebooks/.ipynb_checkpoints/
+
+# Virtual documents
+.virtual_documents/
+

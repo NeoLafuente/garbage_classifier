@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 import sys
 import torch
-from torchvision import models, transforms
+from torchvision import models
 from PIL import Image
-import pytorch_lightning as pl
 from utils import config as cfg
 from utils.custom_classes.GarbageClassifier import GarbageClassifier
 
@@ -21,13 +20,16 @@ class_names = cfg.CLASS_NAMES
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 
-print(f"Loading model...")
-model = GarbageClassifier.load_from_checkpoint(cfg.MODEL_PATH, num_classes = cfg.NUM_CLASSES)
+print("Loading model...")
+model = GarbageClassifier.load_from_checkpoint(
+    cfg.MODEL_PATH,
+    num_classes=cfg.NUM_CLASSES
+)
 
 model = model.to(device)
 model.eval()
 
-print(f"Transforming image...")
+print("Transforming image...")
 transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
 image = Image.open(image_path).convert("RGB")
 tensor = transform(image).unsqueeze(0).to(device)

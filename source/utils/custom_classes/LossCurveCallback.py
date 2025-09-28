@@ -3,9 +3,9 @@
 import os
 import json
 import matplotlib.pyplot as plt
-import torch
 from pytorch_lightning.callbacks import Callback
 from utils import config as cfg
+
 
 class LossCurveCallback(Callback):
     def __init__(self, save_dir=cfg.LOSS_CURVES_PATH):
@@ -16,16 +16,6 @@ class LossCurveCallback(Callback):
         self.val_losses = []
         self.val_accs = []
 
-    # def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
-    #     loss = None
-    #     if isinstance(outputs, dict) and "loss" in outputs:
-    #         loss = outputs["loss"].detach().cpu().item()
-    #     elif torch.is_tensor(outputs):
-    #         loss = outputs.detach().cpu().item()
-
-    #     if loss is not None:
-    #         self.train_losses.append(loss)
-    
     # ---------- Train loss per epoch ----------
     def on_train_epoch_end(self, trainer, pl_module):
         metrics = trainer.callback_metrics
@@ -39,7 +29,6 @@ class LossCurveCallback(Callback):
             self.val_losses.append(metrics["val_loss"].item())
         if "val_acc" in metrics:
             self.val_accs.append(metrics["val_acc"].item())
-
 
     def on_train_end(self, trainer, pl_module):
         # ---------- Save curves as a PNG ----------
@@ -70,5 +59,6 @@ class LossCurveCallback(Callback):
             "val_losses": self.val_losses,
             "val_accs": self.val_accs,
         }
+
         with open(os.path.join(self.save_dir, "metrics.json"), "w") as f:
             json.dump(data, f)

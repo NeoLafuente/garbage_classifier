@@ -1,11 +1,16 @@
 .
 ├── data
 │   ├── interim
-│   │   └── dummy.txt
 │   ├── processed
-│   │   └── dummy.txt
 │   └── raw
-│       ├── dummy.txt
+│       ├── Garbage_Dataset_Classification
+│       │   └── images
+│       │       ├── cardboard
+│       │       ├── glass
+│       │       ├── metal
+│       │       ├── paper
+│       │       ├── plastic
+│       │       └── trash
 │       └── sample_dataset
 │           ├── cardboard
 │           ├── glass
@@ -14,24 +19,30 @@
 │           ├── plastic
 │           └── trash
 ├── models
-│   ├── dummy.txt
-│   └── model_resnet18_garbage.ckpt
+│   ├── performance
+│   │   └── loss_curves
+│   └── weights
+│       └── model_resnet18_garbage.ckpt
 ├── notebooks
-│   └── create_sample_dataset.ipynb
+│   ├── create_sample_dataset.ipynb
+│   ├── dataset_exploration.ipynb
+│   └── performance_analysis.ipynb
 ├── pyproject.toml
 ├── README.md
 ├── reports
-│   └── figures
-│       └── dummy.txt
-├── source
-│   ├── predict.py
-│   ├── train.py
-│   └── utils
-│       ├── config.py
-│       └── custom_classes
-│           ├── GarbageClassifier.py
-│           └── GarbageDataModule.py
-├── tree.txt
-└── uv.lock
+│   ├── compiled
+│   ├── figures
+│   │   ├── EDA
+│   │   └── performance
+│   └── main.tex
+└── source
+    ├── predict.py
+    ├── train.py
+    └── utils
+        ├── config.py
+        └── custom_classes
+            ├── GarbageClassifier.py
+            ├── GarbageDataModule.py
+            └── LossCurveCallback.py
 
-19 directories, 16 files
+33 directories, 13 files
