@@ -10,8 +10,12 @@ __pycache__/
 data/**/*.csv
 data/**/*.h5
 data/**/*.zip
-data/**/*.jpg
-data/**/*.png
+data/raw/**/*.jpg
+data/interim/**/*.jpg
+data/processed/**/*.jpg
+data/raw/**/*.png
+data/interim/**/*.png
+data/processed/**/*.png
 
 # Logs
 *.log
