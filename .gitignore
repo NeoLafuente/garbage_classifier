@@ -10,12 +10,11 @@ __pycache__/
 data/**/*.csv
 data/**/*.h5
 data/**/*.zip
-data/raw/**/*.jpg
+data/raw/Garbage_Dataset_Classification/**/*.jpg
+data/raw/sample_dataset/**/*.jpg
 data/interim/**/*.jpg
 data/processed/**/*.jpg
-data/raw/**/*.png
-data/interim/**/*.png
-data/processed/**/*.png
+data/**/*.png
 
 # Logs
 *.log
