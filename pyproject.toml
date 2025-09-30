@@ -21,3 +21,8 @@ dependencies = [
     "scikit-learn",
     "gdown"
 ]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+]

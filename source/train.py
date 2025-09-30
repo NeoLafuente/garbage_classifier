@@ -1,5 +1,42 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+__docformat__ = "numpy"
+
+"""
+Training Script for Garbage Classification Model.
+
+This script orchestrates the training process for a garbage classification
+model using PyTorch Lightning. It initializes the data module, model,
+callbacks, and trainer, then executes the training loop and saves the
+trained model checkpoint.
+
+The script performs the following steps:
+1. Initializes the GarbageDataModule with stratified train/test split
+2. Creates a GarbageClassifier model (ResNet18-based)
+3. Sets up loss curve visualization callback
+4. Configures PyTorch Lightning Trainer with specified hyperparameters
+5. Trains the model on the garbage dataset
+6. Saves the trained model checkpoint
+
+Usage
+-----
+Command line::
+
+    uv run train.py
+
+Notes
+-----
+Configuration parameters are loaded from `utils.config` module:
+- `MAX_EPOCHS`: Maximum number of training epochs
+- `LOSS_CURVES_PATH`: Directory for saving loss and accuracy plots
+- `MODEL_PATH`: Path where the trained model checkpoint will be saved
+
+The training uses automatic device selection (GPU if available, otherwise CPU)
+and disables sanity validation steps for faster startup.
+"""
+
+
 import pytorch_lightning as pl
 from utils import config as cfg
 from utils.custom_classes.GarbageDataModule import GarbageDataModule

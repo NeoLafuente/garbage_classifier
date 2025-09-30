@@ -1,5 +1,41 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+__docformat__ = "numpy"
+
+"""
+Garbage Classification Prediction Script.
+
+This script loads a trained GarbageClassifier model and performs inference
+on a single image to predict its garbage category. The script can accept
+an image path as a command-line argument or use a default sample image.
+
+The prediction uses a pretrained ResNet18 model fine-tuned for 6-class
+garbage classification (cardboard, glass, metal, paper, plastic, trash).
+
+Usage
+-----
+Command line::
+
+    uv run predict.py <path_to_image>
+
+Examples
+--------
+Predict with custom image::
+
+    uv run predict.py img.jpg
+
+Predict with default sample image::
+
+    uv run predict.py
+
+Notes
+-----
+- The model checkpoint path is configured in `utils.config`
+- Images are automatically preprocessed using ImageNet normalization
+- Prediction runs on GPU if available, otherwise falls back to CPU
+"""
+
 import sys
 import torch
 from torchvision import models
