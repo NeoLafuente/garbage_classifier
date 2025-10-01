@@ -18,7 +18,7 @@ Notes
 All paths are relative to the project root directory. Ensure the directory
 structure matches the configured paths before running training or inference.
 """
-__docformat__ = "numpy"  
+__docformat__ = "numpy"
 
 DATASET_PATH = '../data/raw/sample_dataset/'
 """Path to the raw garbage dataset directory containing training images."""
