@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-__docformat__ = "numpy"
-
 """
 PyTorch Lightning Callback for Loss and Accuracy Curve Visualization.
 
@@ -10,6 +7,7 @@ This module provides a custom callback that tracks and visualizes training
 and validation metrics during model training, saving plots and raw data to
 disk.
 """
+__docformat__ = "numpy"
 
 import os
 import json

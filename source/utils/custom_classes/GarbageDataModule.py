@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-__docformat__ = "numpy"
-
 """
 Garbage Dataset DataModule for PyTorch Lightning.
 
 This module provides a LightningDataModule implementation for loading and
 preparing the garbage classification dataset with stratified train/test splits.
 """
+__docformat__ = "numpy"
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, Subset

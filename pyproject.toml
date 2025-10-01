@@ -25,4 +25,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "flake8>=7.3.0",
+    "pdoc>=15.0.4",
 ]

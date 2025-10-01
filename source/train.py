@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-__docformat__ = "numpy"
-
 """
 Training Script for Garbage Classification Model.
 
@@ -21,9 +18,9 @@ The script performs the following steps:
 
 Usage
 -----
-Command line::
+Command line:
 
-    uv run train.py
+    $ uv run train.py
 
 Notes
 -----
@@ -35,7 +32,7 @@ Configuration parameters are loaded from `utils.config` module:
 The training uses automatic device selection (GPU if available, otherwise CPU)
 and disables sanity validation steps for faster startup.
 """
-
+__docformat__ = "numpy"
 
 import pytorch_lightning as pl
 from utils import config as cfg
@@ -48,6 +45,9 @@ from utils.custom_classes.LossCurveCallback import LossCurveCallback
 # Training
 # ========================
 if __name__ == "__main__":
+    """
+    Main entry point for the training script.
+    """
     data_module = GarbageDataModule(batch_size=32)
     data_module.setup()
 

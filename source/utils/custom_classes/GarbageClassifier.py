@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-__docformat__ = "numpy"
-
 """
 Garbage Classification Model Module.
 
@@ -14,6 +11,7 @@ trash).
 The model uses transfer learning by freezing the pretrained ResNet18 feature
 extraction layers and training only the final classification layer.
 """
+__docformat__ = "numpy"
 
 import pytorch_lightning as pl
 import torch
@@ -30,8 +28,8 @@ class GarbageClassifier(pl.LightningModule):
     problem.
     It considers 6 classes: cardboard, glass, metal, paper, plastic and trash.
 
-    Atributes
-    ---------
+    Attributes
+    ----------
     model : torchvision.models.resnet18
         Pretrained ResNet18 model.
     loss_fn : torch.nn.CrossEntropyLoss

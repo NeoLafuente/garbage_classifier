@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-__docformat__ = "numpy"
-
 """
 Garbage Classification Prediction Script.
 
@@ -15,19 +12,19 @@ garbage classification (cardboard, glass, metal, paper, plastic, trash).
 
 Usage
 -----
-Command line::
+Command line:
 
-    uv run predict.py <path_to_image>
+    $ uv run predict.py <path_to_image>
 
 Examples
 --------
-Predict with custom image::
+Predict with custom image:
 
-    uv run predict.py img.jpg
+    $ uv run predict.py img.jpg
 
-Predict with default sample image::
+Predict with default sample image:
 
-    uv run predict.py
+    $ uv run predict.py
 
 Notes
 -----
@@ -35,6 +32,7 @@ Notes
 - Images are automatically preprocessed using ImageNet normalization
 - Prediction runs on GPU if available, otherwise falls back to CPU
 """
+__docformat__ = "numpy"
 
 import sys
 import torch
@@ -43,37 +41,76 @@ from PIL import Image
 from utils import config as cfg
 from utils.custom_classes.GarbageClassifier import GarbageClassifier
 
-if len(sys.argv) > 2:
-    print("Usage: uv run predict.py <path_to_image>")
-    print("Example with image in this folder: uv run predict.py img.jpg")
-    sys.exit(1)
-elif len(sys.argv) == 1:
-    image_path = cfg.SAMPLE_IMG_PATH
-else:
-    image_path = sys.argv[1]
 
-class_names = cfg.CLASS_NAMES
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Device: {device}")
+def predict_image(image_path):
+    """
+    Predict the garbage category of an input image.
 
-print("Loading model...")
-model = GarbageClassifier.load_from_checkpoint(
-    cfg.MODEL_PATH,
-    num_classes=cfg.NUM_CLASSES
-)
+    Parameters
+    ----------
+    image_path : str
+        Path to the image file to classify.
 
-model = model.to(device)
-model.eval()
+    Returns
+    -------
+    tuple of (str, int)
+        A tuple containing the predicted class name and class index.
 
-print("Transforming image...")
-transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-image = Image.open(image_path).convert("RGB")
-tensor = transform(image).unsqueeze(0).to(device)
+    Examples
+    --------
+    >>> pred_class, pred_idx = predict_image("sample.jpg")
+    >>> print(f"Prediction: {pred_class}")
+
+    Notes
+    -----
+    The function automatically handles device selection (GPU/CPU) and
+    applies the appropriate image transformations for the ResNet18 model.
+    """
+    class_names = cfg.CLASS_NAMES
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Device: {device}")
+
+    print("Loading model...")
+    model = GarbageClassifier.load_from_checkpoint(
+        cfg.MODEL_PATH,
+        num_classes=cfg.NUM_CLASSES
+    )
+
+    model = model.to(device)
+    model.eval()
+
+    print("Transforming image...")
+    transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
+    image = Image.open(image_path).convert("RGB")
+    tensor = transform(image).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        outputs = model(tensor)
+        pred_idx = outputs.argmax(1).item()
+        pred_class = class_names[pred_idx]
+
+    return pred_class, pred_idx
 
 
-with torch.no_grad():
-    outputs = model(tensor)
-    pred_idx = outputs.argmax(1).item()
-    pred_class = class_names[pred_idx]
+def main():
+    """
+    Main entry point for the prediction script.
 
-print(f"Prediction: {pred_class} (class {pred_idx})")
+    Parses command-line arguments and performs prediction on the specified
+    image or a default sample image.
+    """
+    if len(sys.argv) > 2:
+        print("Usage: uv run predict.py <path_to_image>")
+        print("Example with image in this folder: uv run predict.py img.jpg")
+        sys.exit(1)
+    elif len(sys.argv) == 1:
+        image_path = cfg.SAMPLE_IMG_PATH
+    else:
+        image_path = sys.argv[1]
+
+    pred_class, pred_idx = predict_image(image_path)
+    print(f"Prediction: {pred_class} (class {pred_idx})")
+
+
+if __name__ == "__main__":
+    main()
