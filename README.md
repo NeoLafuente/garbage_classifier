@@ -23,6 +23,17 @@
 │           ├── paper
 │           ├── plastic
 │           └── trash
+├── docs
+│   ├── index.html
+│   ├── predict.html
+│   ├── search.js
+│   ├── train.html
+│   └── utils
+│       ├── config.html
+│       └── custom_classes
+│           ├── GarbageClassifier.html
+│           ├── GarbageDataModule.html
+│           └── LossCurveCallback.html
 ├── models
 │   ├── performance
 │   │   └── loss_curves
@@ -40,15 +51,19 @@
 │   │   ├── EDA
 │   │   └── performance
 │   └── main.tex
+├── scripts
+│   └── generate_docs.py
 └── source
     ├── predict.py
     ├── train.py
     └── utils
         ├── config.py
-        └── custom_classes
-            ├── GarbageClassifier.py
-            ├── GarbageDataModule.py
-            └── LossCurveCallback.py
+        ├── custom_classes
+        │   ├── GarbageClassifier.py
+        │   ├── GarbageDataModule.py
+        │   ├── __init__.py
+        │   └── LossCurveCallback.py
+        └── __init__.py
 ```
 
 `dummy.txt` files are just placeholders so GitHub keeps the folder structure.
