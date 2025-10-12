@@ -56,7 +56,9 @@
         │   └── LossCurveCallback.py
         └── __init__.py
 ```
+
 `dummy.txt` files are just placeholders so GitHub keeps the folder structure.
+
 ---
 ## Setup
 This project uses **[uv](https://github.com/astral-sh/uv)** for dependency management.  
