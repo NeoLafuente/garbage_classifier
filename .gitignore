@@ -30,6 +30,7 @@ uv.lock
 models/**/*.png
 models/**/*.pdf
 models/**/*.jpg
+models/**/*.ckpt
 
 # Source
 source/modeling/**/*.jpg
