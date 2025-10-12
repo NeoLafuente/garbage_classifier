@@ -74,7 +74,9 @@ def predict_image(image_path, model, transform, device, class_names):
 
     Examples
     --------
-    >>> pred_class, pred_idx = predict_image("sample.jpg", model, transform, device, class_names)
+    >>> pred_class, pred_idx = predict_image(
+            "sample.jpg", model, transform, device, class_names
+        )
     >>> print(f"Prediction: {pred_class}")
 
     Notes
@@ -113,7 +115,15 @@ def get_image_files(path):
     Supported image formats: jpg, jpeg, png, bmp, gif, tiff, tif
     Files are returned in sorted order for consistent processing.
     """
-    valid_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.tif'}
+    valid_extensions = {
+        '.jpg',
+        '.jpeg',
+        '.png',
+        '.bmp',
+        '.gif',
+        '.tiff',
+        '.tif'
+    }
     image_files = [
         f for f in path.iterdir()
         if f.is_file() and f.suffix.lower() in valid_extensions
@@ -138,28 +148,28 @@ def predict_folder(folder_path):
     - A summary with all predictions is displayed at the end
     """
     folder = Path(folder_path)
-    
+
     if not folder.exists():
         print(f"Error: Folder '{folder_path}' does not exist.")
         sys.exit(1)
-    
+
     if not folder.is_dir():
         print(f"Error: '{folder_path}' is not a directory.")
         sys.exit(1)
-    
+
     image_files = get_image_files(folder)
-    
+
     if not image_files:
         print(f"No valid image files found in '{folder_path}'")
         sys.exit(1)
-    
+
     print(f"Found {len(image_files)} image(s) to process\n")
-    
+
     # Setup device and model
     class_names = cfg.CLASS_NAMES
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
-    
+
     print("Loading model...")
     model = GarbageClassifier.load_from_checkpoint(
         cfg.MODEL_PATH,
@@ -167,10 +177,10 @@ def predict_folder(folder_path):
     )
     model = model.to(device)
     model.eval()
-    
+
     print("Preparing transformations...\n")
     transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-    
+
     # Process all images
     results = []
     for idx, image_path in enumerate(image_files, 1):
@@ -184,7 +194,7 @@ def predict_folder(folder_path):
         except Exception as e:
             print(f"  -> Error processing {image_path.name}: {str(e)}\n")
             continue
-    
+
     # Print summary
     if results:
         print("=" * 60)
@@ -223,7 +233,7 @@ def predict_single_image(image_path):
 
     print("Transforming image...")
     transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-    
+
     pred_class, pred_idx = predict_image(
         image_path, model, transform, device, class_names
     )
@@ -254,11 +264,11 @@ def main():
         predict_single_image(image_path)
     else:
         input_path = Path(sys.argv[1])
-        
+
         if not input_path.exists():
             print(f"Error: Path '{input_path}' does not exist.")
             sys.exit(1)
-        
+
         if input_path.is_dir():
             predict_folder(input_path)
         else:
