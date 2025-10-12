@@ -1,28 +1,20 @@
 # Project Structure and Usage Guide
-
 ## Project Organization
-
 ```
 .
 ├── data
 │   ├── interim
 │   ├── processed
 │   └── raw
-│       ├── Garbage_Dataset_Classification
-│       │   └── images
-│       │       ├── cardboard
-│       │       ├── glass
-│       │       ├── metal
-│       │       ├── paper
-│       │       ├── plastic
-│       │       └── trash
-│       └── sample_dataset
-│           ├── cardboard
-│           ├── glass
-│           ├── metal
-│           ├── paper
-│           ├── plastic
-│           └── trash
+│       └── Garbage_Dataset_Classification
+│           ├── images
+│           │   ├── cardboard
+│           │   ├── glass
+│           │   ├── metal
+│           │   ├── paper
+│           │   ├── plastic
+│           │   └── trash
+│           └── metadata.csv
 ├── docs
 │   ├── index.html
 │   ├── predict.html
@@ -38,7 +30,6 @@
 │   ├── performance
 │   │   └── loss_curves
 │   └── weights
-│       └── model_resnet18_garbage.ckpt
 ├── notebooks
 │   ├── create_sample_dataset.ipynb
 │   ├── dataset_exploration.ipynb
@@ -65,104 +56,111 @@
         │   └── LossCurveCallback.py
         └── __init__.py
 ```
-
 `dummy.txt` files are just placeholders so GitHub keeps the folder structure.
-
 ---
-
 ## Setup
-
 This project uses **[uv](https://github.com/astral-sh/uv)** for dependency management.  
-
 1. Install `uv`:
-
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-
 2. Sync dependencies:
-
 ```bash
 uv sync
 ```
-
 ---
-
 ## Dataset
-
 The notebook `notebooks/create_sample_dataset.ipynb` prepares the dataset if the `sample_dataset` folder does not exist. It:
 - Downloads the [Garbage Classification Dataset](https://www.kaggle.com/datasets/zlatan599/garbage-dataset-classification?resource=download).
 - Creates the `sample_dataset` folder inside `data/raw`.
 - Reduces dataset size for lightweight experimentation.
-
 ---
-
 ## Training
-
 - **`source/train.py`**  
   Trains the **`GarbageClassifier`** (ResNet18 with PyTorch Lightning).
-
 Run training with:
-
 ```bash
 uv run source/train.py
 ```
-
 The model checkpoint will be saved at:
-
 ```
 models/weights/model_resnet18_garbage.ckpt
 ```
-
 ---
-
 ## Prediction
-
 - **`source/predict.py`**  
-  Loads the trained model and classifies an image.
+  Loads the trained model and classifies images. Supports both single image and batch folder prediction.
 
-Usage:
-
+### Single Image Prediction
+Predict a single image:
 ```bash
 uv run source/predict.py <path_to_image>
 ```
-
-Examples:
-
+Example:
 ```bash
 uv run source/predict.py img.jpg
 ```
+If no path is given, the default image in `config.py` is used:
+```bash
+uv run source/predict.py
+```
 
-If no path is given, the default image in `config.py` is used.
+### Batch Folder Prediction
+Predict all images in a folder:
+```bash
+uv run source/predict.py <path_to_folder>
+```
+Examples:
+```bash
+uv run source/predict.py data/test_images/
+uv run source/predict.py ../new_samples/
+```
+
+The script will:
+- Automatically detect all valid image files (jpg, jpeg, png, bmp, gif, tiff)
+- Process them sequentially with progress indicators
+- Display a summary table with all predictions
+
+Supported image formats: `.jpg`, `.jpeg`, `.png`, `.bmp`, `.gif`, `.tiff`, `.tif`
 
 ---
-
 ## Framework
-
 This project is built with:
-
 - **PyTorch Lightning** for modular training.
 - **ResNet18** as the backbone model for garbage classification.
-
 ---
+## Documentation
+- **`docs/`**: Auto-generated HTML documentation using pdoc3.
+- **`scripts/generate_docs.py`**: Script to regenerate documentation from source code docstrings.
 
+To regenerate documentation:
+```bash
+uv run scripts/generate_docs.py
+```
+---
 ## Reports
-
-- **`reports/main.tex`**: Main LaTeX report.  
-- **`reports/figures`**: Stores plots from EDA and model performance.  
-- **`reports/compiled`**: Place to store compiled report PDFs.  
-
+- **`reports/main.tex`**: Main LaTeX report with project methodology and results.  
+- **`reports/figures/`**: Stores plots and visualizations.
+  - `EDA/`: Exploratory data analysis figures.
+  - `performance/`: Model evaluation metrics and confusion matrices.
+- **`reports/compiled/`**: Compiled PDF reports.
 ---
-
 ## Notebooks
-
-- **`dataset_exploration.ipynb`**: Exploratory Data Analysis (EDA).  
-- **`performance_analysis.ipynb`**: Model evaluation and error analysis.  
-- **`create_sample_dataset.ipynb`**: Scripted dataset preparation.  
-
+- **`create_sample_dataset.ipynb`**: Scripted dataset preparation and sampling.  
+- **`dataset_exploration.ipynb`**: Exploratory Data Analysis (EDA) with class distribution and sample visualization.  
+- **`performance_analysis.ipynb`**: Model evaluation, confusion matrices, and error analysis.
 ---
-
 ## Models
-
-- **`models/weights`**: Stores trained checkpoints.  
-- **`models/performance/loss_curves`**: Training/validation loss curves.  
+- **`models/weights/`**: Stores trained model checkpoints (`.ckpt` files).  
+- **`models/performance/loss_curves/`**: Training and validation loss curves with metrics in JSON format.
+---
+## Data Organization
+- **`data/raw/`**: Original unprocessed datasets.
+- **`data/interim/`**: Intermediate data transformations.
+- **`data/processed/`**: Final preprocessed data ready for training.
+---
+## Configuration
+- **`source/utils/config.py`**: Centralized configuration file containing:
+  - Dataset paths and class names
+  - Model hyperparameters (batch size, learning rate, epochs)
+  - Training and validation split ratios
