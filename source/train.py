@@ -20,10 +20,10 @@ __docformat__ = "numpy"
 
 import pytorch_lightning as pl
 from pathlib import Path
-from .utils import config as cfg
-from .utils.custom_classes.GarbageDataModule import GarbageDataModule
-from .utils.custom_classes.GarbageClassifier import GarbageClassifier
-from .utils.custom_classes.LossCurveCallback import LossCurveCallback
+from source.utils import config as cfg
+from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
+from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
+from source.utils.custom_classes.LossCurveCallback import LossCurveCallback
 
 
 def train_model(

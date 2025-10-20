@@ -7,9 +7,9 @@ This module contains custom implementations of:
 - LossCurveCallback: Training metrics visualization
 """
 
-from .GarbageClassifier import GarbageClassifier
-from .GarbageDataModule import GarbageDataModule
-from .LossCurveCallback import LossCurveCallback
+from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
+from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
+from source.utils.custom_classes.LossCurveCallback import LossCurveCallback
 
 __all__ = [
     'GarbageClassifier',
