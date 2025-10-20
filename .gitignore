@@ -44,3 +44,5 @@ notebooks/.ipynb_checkpoints/
 # Virtual documents
 .virtual_documents/
 
+
+models/weights/
