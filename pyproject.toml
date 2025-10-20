@@ -19,7 +19,8 @@ dependencies = [
     "torchinfo>=1.8.0",
     "torchvision>=0.22.1",
     "scikit-learn",
-    "gdown"
+    "gdown",
+    "gradio>=5.49.1",
 ]
 authors = [
 	{name = "Melchor Lafuente"},
