@@ -1,7 +1,7 @@
 [project]
 name = "garbage_classifier"
 version = "0.1.0"
-description = "Sample environment for testing Pytorch and TensorFlow"
+description = "Finetunned ResNet18 for garbage image classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
@@ -21,9 +21,28 @@ dependencies = [
     "scikit-learn",
     "gdown"
 ]
+authors = [
+	{name = "Melchor Lafuente"},
+	{name = "Iker Jauregui"}
+]
+maintainers = [
+	{name = "Melchor Lafuente"},
+	{name = "Iker Jauregui"}
+]
+keywords = [
+	"machine-learning",
+	"datascience",
+	"ai",
+	"garbage",
+	"garbage classifier",
+	"garbage-classifier",
+	"garbage_classifier",
+	"resnet"
+]
 
 [dependency-groups]
 dev = [
+    "build>=1.3.0",
     "flake8>=7.3.0",
     "pdoc>=15.0.4",
 ]
