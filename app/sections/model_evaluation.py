@@ -247,7 +247,7 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
         result_text += f"**Confidence:** {result['confidence']*100:.2f}%\n\n"
         result_text += "**All Probabilities:**\n"
         for class_name, prob in result['probabilities'].items():
-            emoji = "✅" if class_name == result['predicted_class'] else "  "
+            emoji = "🏆" if class_name == result['predicted_class'] else "  "
             result_text += f"{emoji} {class_name}: {prob*100:.2f}%\n"
         
         # Add emissions if tracked
@@ -268,10 +268,10 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
 def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon=True):
     """Gradio wrapper for batch prediction"""
     if not files or len(files) == 0:
-        return None, "Please upload images", carbon_display_text  # ✅
+        return None, "Please upload images", carbon_display_text
     
     if not model_choice:
-        return None, "Please select a model first", carbon_display_text  # ✅
+        return None, "Please select a model first", carbon_display_text
     
     try:
         # Get model path
@@ -284,7 +284,7 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         # Extract file paths
         image_paths = [file.name for file in files]
         
-        # ✅ USE IMPORTED FUNCTION
+        # USE IMPORTED FUNCTION
         batch_result = predict_batch(
             image_paths,
             model=model,
@@ -318,7 +318,7 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         result_text += f"**Successful predictions:** {summary['successful']}\n\n"
         
         # Add emissions if tracked
-        updated_carbon_display = carbon_display_text  # ✅ Inicializar con el valor recibido
+        updated_carbon_display = carbon_display_text
         if batch_result['emissions']:
             emissions = batch_result['emissions']
             result_text += f"### 🌍 Carbon Footprint\n"
@@ -341,13 +341,13 @@ def model_evaluation_tab(carbon_display):
     """Create the Model Evaluation UI"""
     # [Keep your existing UI code, just replace the function calls]
     with gr.Column():
-        gr.Markdown("### ✅ Model Evaluation & Inference")
+        gr.Markdown("### 🔬 Model Evaluation & Inference")
         gr.Markdown(
             "Evaluate trained models, visualize metrics, and make predictions on new images."
         )
         
         # Model Selection
-        gr.Markdown("#### 1️⃣ Model Selection")
+        gr.Markdown("#### 🧠 Model Selection")
         model_choice = gr.Radio(
             choices=list(get_available_models().keys()),
             value=list(get_available_models().keys())[0],
@@ -358,7 +358,7 @@ def model_evaluation_tab(carbon_display):
         gr.Markdown("---")
         
         # Metrics Section
-        gr.Markdown("#### 2️⃣ Model Metrics & Visualizations")
+        gr.Markdown("#### 📈 Model Metrics & Visualizations")
         
         with gr.Tabs():
             with gr.Tab("Confusion Matrix"):
@@ -413,10 +413,9 @@ def model_evaluation_tab(carbon_display):
         gr.Markdown("---")
         
         # Inference Section
-        gr.Markdown("#### 3️⃣ Image Prediction")
+        gr.Markdown("#### 🔍 Image Prediction")
         
         with gr.Tabs():
-            # En la sección de Single Image UI
             with gr.Tab("Single Image"):
                 gr.Markdown("Upload an image to classify it into one of the garbage categories.")
                 
@@ -425,7 +424,7 @@ def model_evaluation_tab(carbon_display):
                         single_image_input = gr.Image(
                             label="Upload Image",
                             type="numpy",
-                            height=400  # ✅ Más grande al ser la única imagen
+                            height=400
                         )
                         single_track_carbon = gr.Checkbox(
                             label="🌍 Track Carbon Emissions",
@@ -434,7 +433,6 @@ def model_evaluation_tab(carbon_display):
                         single_predict_button = gr.Button("🔍 Predict", variant="primary", size="lg")
                     
                     with gr.Column(scale=1):
-                        # ✅ OPCIÓN A: Mostrar gráfico de probabilidades aquí
                         single_probs_plot = gr.Plot(
                             label="Class Probabilities"
                         )
@@ -445,7 +443,7 @@ def model_evaluation_tab(carbon_display):
                 single_predict_button.click(
                     fn=predict_single_image_gradio,
                     inputs=[model_choice, single_image_input, carbon_display, single_track_carbon],
-                    outputs=[single_probs_plot, single_result_text, carbon_display]  # ✅ Quitar single_image_display
+                    outputs=[single_probs_plot, single_result_text, carbon_display]
                 )
             
             with gr.Tab("Batch Prediction"):
@@ -470,16 +468,14 @@ def model_evaluation_tab(carbon_display):
                 )
                 
                 batch_predict_button.click(
-                    fn=predict_folder_gradio,  # ✅ Updated function name
+                    fn=predict_folder_gradio,
                     inputs=[model_choice, batch_image_input, carbon_display, batch_track_carbon],
                     outputs=[batch_results_table, batch_result_text, carbon_display]
                 )
         
         gr.Markdown("---")
         gr.Markdown(
-            "**ℹ️ Info:** All predictions use the same model architecture and preprocessing "
-            "as the training pipeline (`source/predict.py`). Carbon emissions are tracked for "
-            "inference operations and added to the total carbon footprint."
+            "**ℹ️ Info:** Carbon emissions are tracked for inference operations and added to the total carbon footprint."
         )
     
     return []
