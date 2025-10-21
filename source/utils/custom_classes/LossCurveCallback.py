@@ -70,6 +70,7 @@ class LossCurveCallback(Callback):
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
         self.train_losses = []
+        self.train_accs =[] 
         self.val_losses = []
         self.val_accs = []
 
@@ -94,6 +95,8 @@ class LossCurveCallback(Callback):
         metrics = trainer.callback_metrics
         if "train_loss" in metrics:
             self.train_losses.append(metrics["train_loss"].item())
+        if "train_acc" in metrics:
+            self.train_accs.append(metrics["train_acc"].item())
 
     # ---------- Val loss and acc per epoch ----------
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -151,25 +154,27 @@ class LossCurveCallback(Callback):
             plt.plot(self.val_losses, label="Val Loss")
         plt.legend()
         plt.title("Loss Curves")
-        plt.xlabel("Steps / Epochs")
+        plt.xlabel("Epochs")
         plt.ylabel("Loss")
         plt.savefig(os.path.join(self.save_dir, "loss_curve.png"))
         plt.close()
 
+        plt.figure()
+        plt.plot(self.train_accs, label="Train Accuracy")
         if len(self.val_accs) > 0:
-            plt.figure()
             plt.plot(self.val_accs, label="Val Accuracy")
-            plt.legend()
-            plt.title("Validation Accuracy")
-            plt.xlabel("Epochs")
-            plt.ylabel("Accuracy")
-            plt.savefig(os.path.join(self.save_dir, "val_acc_curve.png"))
-            plt.close()
+        plt.legend()
+        plt.title("Accuracy Curves")
+        plt.xlabel("Epochs")
+        plt.ylabel("Accuracy")
+        plt.savefig(os.path.join(self.save_dir, "val_acc_curve.png"))
+        plt.close()
 
         # ---------- Save raw data ----------
         data = {
             "train_losses": self.train_losses,
             "val_losses": self.val_losses,
+            "train_accs": self.train_accs,
             "val_accs": self.val_accs,
         }
 
