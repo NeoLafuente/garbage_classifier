@@ -107,6 +107,9 @@ This project follows best practices for:
 For more detailed information, see the individual module documentation.
 """
 
+from source import train
+from source import predict
+
 __all__ = [
     'train',
     'predict',

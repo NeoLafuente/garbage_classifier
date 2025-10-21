@@ -37,6 +37,7 @@ source/modeling/**/*.jpg
 
 # +Source
 source/lightning_logs/
+lightning_logs/
 
 # Notebooks
 notebooks/.ipynb_checkpoints/
@@ -46,3 +47,5 @@ notebooks/.ipynb_checkpoints/
 
 
 models/weights/
+
+models/performance/loss_curves/metrics.json
