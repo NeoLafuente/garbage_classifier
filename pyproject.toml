@@ -21,6 +21,7 @@ dependencies = [
     "scikit-learn",
     "gdown",
     "gradio>=5.49.1",
+    "codecarbon>=3.0.7",
 ]
 authors = [
 	{name = "Melchor Lafuente"},
