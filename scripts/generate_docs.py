@@ -30,6 +30,7 @@ OUTPUT_DIR = PROJECT_ROOT / "docs"
 
 # Files to document (using file paths instead of module names)
 FILES_TO_DOCUMENT = [
+    SOURCE_DIR / "__init__.py",
     SOURCE_DIR / "train.py",
     SOURCE_DIR / "predict.py",
     SOURCE_DIR / "utils" / "config.py",

@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, models
 from sklearn.model_selection import train_test_split
 import numpy as np
-from utils import config as cfg
+from source.utils import config as cfg
 
 
 class GarbageDataModule(pl.LightningDataModule):

@@ -11,9 +11,9 @@ data/**/*.csv
 data/**/*.h5
 data/**/*.zip
 data/raw/Garbage_Dataset_Classification/**/*.jpg
-data/raw/sample_dataset/**/*.jpg
-data/interim/**/*.jpg
-data/processed/**/*.jpg
+# data/raw/sample_dataset/**/*.jpg -> Uploaded to HF
+# data/interim/**/*.jpg -> Uploaded to HF
+# data/processed/**/*.jpg -> Uploaded to HF
 data/**/*.png
 
 # Logs
@@ -37,7 +37,6 @@ source/modeling/**/*.jpg
 
 # +Source
 source/lightning_logs/
-lightning_logs/
 
 # Notebooks
 notebooks/.ipynb_checkpoints/
@@ -47,7 +46,3 @@ notebooks/.ipynb_checkpoints/
 
 
 models/weights/
-
-models/performance/loss_curves/metrics.json
-
-*.orig

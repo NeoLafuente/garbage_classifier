@@ -46,8 +46,8 @@ from pathlib import Path
 import torch
 from torchvision import models
 from PIL import Image
-from utils import config as cfg
-from utils.custom_classes.GarbageClassifier import GarbageClassifier
+from source.utils import config as cfg
+from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
 
 
 def predict_image(image_path, model, transform, device, class_names):

@@ -13,7 +13,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 from pytorch_lightning.callbacks import Callback
-from utils import config as cfg
+from source.utils import config as cfg
 
 
 class LossCurveCallback(Callback):
