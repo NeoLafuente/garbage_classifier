@@ -2,14 +2,23 @@
 import gradio as gr
 from source.train import train_model
 from source.utils import config as cfg
-from source.utils.carbon_utils import format_car_distance, format_car_distance_meters_only
+from source.utils.carbon_utils import (
+    format_car_distance, 
+    format_car_distance_meters_only,
+    format_total_emissions_display
+)
 from pathlib import Path
 import pandas as pd
 
 
+def get_emissions_path():
+    """Get the path to the emissions CSV file"""
+    return Path(cfg.MODEL_PATH).parent / "emissions.csv"
+
+
 def load_emissions_history():
     """Load emissions history from CSV file and format it"""
-    emissions_file = Path(cfg.MODEL_PATH).parent / "emissions.csv"
+    emissions_file = get_emissions_path()
     if emissions_file.exists():
         try:
             df = pd.read_csv(emissions_file)
@@ -73,7 +82,7 @@ def run_training(batch_size, learning_rate, max_epochs, track_carbon, progress=g
     Returns
     -------
     tuple
-        (status_message, emissions_history_dataframe)
+        (status_message, emissions_history_dataframe, carbon_display_text)
     """
     status_messages = []
     
@@ -134,15 +143,26 @@ def run_training(batch_size, learning_rate, max_epochs, track_carbon, progress=g
         # Load updated emissions history
         emissions_df = load_emissions_history()
         
-        return final_message, emissions_df
+        # Update carbon display
+        carbon_text = format_total_emissions_display(get_emissions_path())
+        
+        return final_message, emissions_df, carbon_text
         
     except Exception as e:
         error_msg = f"❌ **Training Failed!**\n\n**Error:** {str(e)}"
-        return error_msg, load_emissions_history()
+        carbon_text = format_total_emissions_display(get_emissions_path())
+        return error_msg, load_emissions_history(), carbon_text
 
 
-def model_training_tab():
-    """Create the Training Interface UI"""
+def model_training_tab(carbon_display):
+    """
+    Create the Training Interface UI
+    
+    Parameters
+    ----------
+    carbon_display : gr.Markdown
+        The carbon counter display component to update
+    """
     with gr.Column():
         gr.Markdown("### ⚙️ Model Training Interface")
         gr.Markdown(
@@ -191,7 +211,7 @@ def model_training_tab():
                 output = gr.Markdown(
                     "Click 'Start Training' to begin...",
                     label="Status",
-                    height=400  # Increased height for better visibility
+                    height=400
                 )
         
         gr.Markdown("---")
@@ -218,12 +238,11 @@ def model_training_tab():
             "Learn more about CodeCarbon at [codecarbon.io](https://codecarbon.io/)"
         )
         
-        # Connect button to training function
-        # Only update status output during training, emissions_table updates at the end
+        # Connect button to training function - now updates carbon display too
         train_btn.click(
             fn=run_training,
             inputs=[batch_size, learning_rate, max_epochs, track_carbon],
-            outputs=[output, emissions_table]
+            outputs=[output, emissions_table, carbon_display]
         )
         
         # Refresh emissions history independently
@@ -232,3 +251,5 @@ def model_training_tab():
             inputs=[],
             outputs=emissions_table
         )
+    
+    return [output, emissions_table]
