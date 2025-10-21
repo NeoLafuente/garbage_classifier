@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from PIL import Image
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.cluster.hierarchy import dendrogram, linkage
@@ -29,7 +30,7 @@ class EdaAnalyzer:
         Metadata DataFrame
     """
 
-    def __init__(self, root_path: str = "../data/raw", dataset_name: str = "Garbage_Dataset_Classification"):
+    def __init__(self, root_path: str = "./data/raw", dataset_name: str = "Garbage_Dataset_Classification"):
         self.root_path = root_path
         self.dataset_path = os.path.join(root_path, dataset_name)
         self.zip_file = os.path.join(root_path, "garbage-dataset.zip")
@@ -75,22 +76,23 @@ class EdaAnalyzer:
     # -------------------------------------------------------------------------
     # Visualization utilities
     # -------------------------------------------------------------------------
-    def plot_random_examples_per_class(self, filename: Optional[str] = None):
-        """Plot a random image from each class."""
+    def plot_random_examples_per_class(self, filename: Optional[str] = None) -> Figure:
+        """Plot a random image from each class and return the figure."""
         df = self.df
         classes = df['label'].unique()
         palette = sns.color_palette("tab10", len(classes))
         class_colors = {cls: palette[i] for i, cls in enumerate(classes)}
 
         cols, rows = 3, (len(classes) + 2) // 3
-        plt.figure(figsize=(cols*4, rows*4))
+        fig, axes = plt.subplots(rows, cols, figsize=(cols*4, rows*4))
+        axes = axes.flatten()  # para indexar fácilmente incluso si rows*cols > len(classes)
 
         for i, cls in enumerate(classes):
             img_filename = df[df['label'] == cls].sample(1).iloc[0]['filename']
             img_path = os.path.join(self.dataset_path, "images", cls, img_filename)
             img = Image.open(img_path)
 
-            ax = plt.subplot(rows, cols, i + 1)
+            ax = axes[i]
             ax.imshow(img)
             ax.set_title(cls, fontsize=14, color=class_colors[cls])
             ax.axis("off")
@@ -98,26 +100,40 @@ class EdaAnalyzer:
                 spine.set_edgecolor(class_colors[cls])
                 spine.set_linewidth(4)
 
+        # Si sobran axes vacíos, los ocultamos
+        for j in range(i+1, len(axes)):
+            axes[j].axis("off")
+
         plt.tight_layout()
+
         if filename:
             plt.savefig(filename, dpi=150)
-        plt.show()
+        
+        return fig
 
-    def plot_class_distribution(self, filename: Optional[str] = None):
-        """Plot class distribution using seaborn."""
-        plt.figure(figsize=(8, 5))
-        sns.countplot(data=self.df, x="label", order=self.df['label'].value_counts().index, palette="tab10")
-        plt.title("Class Distribution", fontsize=16)
-        plt.xlabel("Class")
-        plt.ylabel("Count")
-        plt.xticks(rotation=45)
+    def plot_class_distribution(self, filename: Optional[str] = None) -> Figure:
+        """Plot class distribution using seaborn and return the figure."""
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sns.countplot(
+            data=self.df,
+            x="label",
+            order=self.df['label'].value_counts().index,
+            palette="tab10",
+            ax=ax
+        )
+        ax.set_title("Class Distribution", fontsize=16)
+        ax.set_xlabel("Class")
+        ax.set_ylabel("Count")
+        plt.setp(ax.get_xticklabels(), rotation=45)  # rotar etiquetas
         plt.tight_layout()
-        if filename:
-            plt.savefig(filename, dpi=150)
-        plt.show()
 
-    def plot_image_size_scatter(self, filename: Optional[str] = None):
-        """Plot scatter of image dimensions per class."""
+        if filename:
+            fig.savefig(filename, dpi=150)
+        
+        return fig
+
+    def plot_image_size_scatter(self, filename: Optional[str] = None) -> Figure:
+        """Plot scatter of image dimensions per class and return the figure."""
         widths, heights, labels = [], [], []
         for _, row in self.df.iterrows():
             img_path = os.path.join(self.dataset_path, "images", row['label'], row['filename'])
@@ -131,13 +147,24 @@ class EdaAnalyzer:
                 continue
 
         size_df = pd.DataFrame({"Width": widths, "Height": heights, "Label": labels})
-        plt.figure(figsize=(8, 6))
-        sns.scatterplot(data=size_df, x="Width", y="Height", hue="Label", style="Label", palette="tab10")
-        plt.title("Image Dimensions per Class")
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.scatterplot(
+            data=size_df,
+            x="Width",
+            y="Height",
+            hue="Label",
+            style="Label",
+            palette="tab10",
+            ax=ax
+        )
+        ax.set_title("Image Dimensions per Class")
         plt.tight_layout()
+
         if filename:
-            plt.savefig(filename, dpi=150)
-        plt.show()
+            fig.savefig(filename, dpi=150)
+
+        return fig
 
     # -------------------------------------------------------------------------
     # Prototypes & correlations
@@ -164,8 +191,8 @@ class EdaAnalyzer:
                     result[cls] = np.median(imgs_stack, axis=0) / 255.0
         return result
 
-    def plot_mean_images_per_class(self, filename: Optional[str] = None):
-        """Compute or load and plot mean images per class."""
+    def plot_mean_images_per_class(self, filename: Optional[str] = None) -> Figure:
+        """Compute or load and plot mean images per class, returning the figure."""
         
         mean_images = None
 
@@ -185,37 +212,27 @@ class EdaAnalyzer:
                 np.save(filename, mean_images)
                 print(f"[INFO] Saved mean images to {filename}")
 
-        # Plotear siempre
+        # --- Plot ---
         cols, rows = 3, (len(mean_images) + 2) // 3
-        plt.figure(figsize=(cols * 4, rows * 4))
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+        axes = axes.flatten()  # facilitar indexado
+
         for i, (cls, img) in enumerate(mean_images.items()):
-            plt.subplot(rows, cols, i + 1)
-            plt.imshow(img)
-            plt.title(f"Mean {cls}")
-            plt.axis("off")
+            ax = axes[i]
+            ax.imshow(img)
+            ax.set_title(f"Mean {cls}")
+            ax.axis("off")
+
+        # ocultar ejes sobrantes
+        for j in range(i+1, len(axes)):
+            axes[j].axis("off")
+
         plt.tight_layout()
-        plt.show()
 
-        return mean_images
+        return fig
 
-    def plot_median_images_per_class(self, filename: Optional[str] = None):
-        """Compute and plot median images per class."""
-        median_images = self._compute_stat_images("median")
-        cols, rows = 3, (len(median_images) + 2) // 3
-        plt.figure(figsize=(cols*4, rows*4))
-        for i, (cls, img) in enumerate(median_images.items()):
-            plt.subplot(rows, cols, i + 1)
-            plt.imshow(img)
-            plt.title(f"Median {cls}")
-            plt.axis("off")
-        plt.tight_layout()
-        if filename:
-            plt.savefig(filename, dpi=150)
-        plt.show()
-        return median_images
-
-    def plot_median_images_per_class(self, filename: Optional[str] = None):
-        """Compute or load and plot median images per class."""
+    def plot_median_images_per_class(self, filename: Optional[str] = None) -> Figure:
+        """Compute or load and plot median images per class, returning the figure."""
         
         median_images = None
 
@@ -235,18 +252,24 @@ class EdaAnalyzer:
                 np.save(filename, median_images)
                 print(f"[INFO] Saved median images to {filename}")
 
-        # Plotear siempre
+        # --- Plot ---
         cols, rows = 3, (len(median_images) + 2) // 3
-        plt.figure(figsize=(cols * 4, rows * 4))
-        for i, (cls, img) in enumerate(median_images.items()):
-            plt.subplot(rows, cols, i + 1)
-            plt.imshow(img)
-            plt.title(f"Median {cls}")
-            plt.axis("off")
-        plt.tight_layout()
-        plt.show()
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+        axes = axes.flatten()  # facilitar indexado
 
-        return median_images
+        for i, (cls, img) in enumerate(median_images.items()):
+            ax = axes[i]
+            ax.imshow(img)
+            ax.set_title(f"Median {cls}")
+            ax.axis("off")
+
+        # ocultar ejes sobrantes
+        for j in range(i+1, len(axes)):
+            axes[j].axis("off")
+
+        plt.tight_layout()
+
+        return fig
 
     def compute_cosine_similarity(self, mean_images: dict, channel: Optional[int] = None):
         """
