@@ -22,6 +22,7 @@ import pytorch_lightning as pl
 from pathlib import Path
 from codecarbon import EmissionsTracker
 from source.utils import config as cfg
+from source.utils.carbon_utils import kg_co2_to_car_distance, format_car_distance
 from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
 from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
 from source.utils.custom_classes.LossCurveCallback import LossCurveCallback
@@ -64,6 +65,7 @@ def train_model(
         - 'model': Trained model
         - 'data_module': Data module used
         - 'emissions': Carbon emissions data (if tracked)
+        - 'metrics': Training and validation metrics
     """
     # Use config defaults if not provided
     if max_epochs is None:
@@ -112,6 +114,20 @@ def train_model(
         # Train
         trainer.fit(model, datamodule=data_module)
         
+        # Extract final metrics
+        metrics = {}
+        if trainer.callback_metrics:
+            metrics['train_acc'] = trainer.callback_metrics.get('train_acc', None)
+            metrics['val_acc'] = trainer.callback_metrics.get('val_acc', None)
+            metrics['train_loss'] = trainer.callback_metrics.get('train_loss', None)
+            metrics['val_loss'] = trainer.callback_metrics.get('val_loss', None)
+            
+            # Convert tensors to float if needed
+            for key in metrics:
+                if metrics[key] is not None:
+                    if hasattr(metrics[key], 'item'):
+                        metrics[key] = metrics[key].item()
+        
         # Save model
         if progress_callback:
             progress_callback("Saving model...")
@@ -121,9 +137,13 @@ def train_model(
         # Stop emissions tracking
         if track_carbon:
             emissions_kg = tracker.stop()
+            car_distances = kg_co2_to_car_distance(emissions_kg)
             emissions_data = {
                 'emissions_kg': emissions_kg,
                 'emissions_g': emissions_kg * 1000,
+                'car_distance_km': car_distances['distance_km'],
+                'car_distance_m': car_distances['distance_m'],
+                'car_distance_formatted': format_car_distance(emissions_kg),
                 'duration_seconds': tracker._total_duration.total_seconds() if hasattr(tracker, '_total_duration') else None
             }
         
@@ -131,17 +151,20 @@ def train_model(
             msg = f"✅ Training complete! Model saved at {model_save_path}"
             if emissions_data:
                 msg += f"\n🌍 Carbon footprint: {emissions_data['emissions_g']:.2f}g CO₂eq"
+                msg += f"\n🚗 Equivalent to driving: {emissions_data['car_distance_formatted']}"
             progress_callback(msg)
         
         print(f"Model saved at {model_save_path}")
         if emissions_data:
             print(f"Carbon emissions: {emissions_data['emissions_kg']:.6f} kg CO₂eq ({emissions_data['emissions_g']:.2f}g)")
+            print(f"Equivalent to driving: {emissions_data['car_distance_formatted']}")
         
         return {
             'trainer': trainer,
             'model': model,
             'data_module': data_module,
-            'emissions': emissions_data
+            'emissions': emissions_data,
+            'metrics': metrics
         }
     
     except Exception as e:
@@ -162,3 +185,10 @@ if __name__ == "__main__":
     result = train_model()
     if result['emissions']:
         print(f"\n🌍 Total carbon footprint: {result['emissions']['emissions_g']:.2f}g CO₂eq")
+        print(f"🚗 Equivalent to driving: {result['emissions']['car_distance_formatted']}")
+    if result['metrics']:
+        print(f"\n📊 Final Metrics:")
+        if result['metrics'].get('train_acc') is not None:
+            print(f"  Train Accuracy: {result['metrics']['train_acc']:.4f}")
+        if result['metrics'].get('val_acc') is not None:
+            print(f"  Validation Accuracy: {result['metrics']['val_acc']:.4f}")
