@@ -165,19 +165,37 @@ class EdaAnalyzer:
         return result
 
     def plot_mean_images_per_class(self, filename: Optional[str] = None):
-        """Compute and plot mean images per class."""
-        mean_images = self._compute_stat_images("mean")
+        """Compute or load and plot mean images per class."""
+        
+        mean_images = None
+
+        # Si existe el archivo, intenta leerlo
+        if filename and os.path.exists(filename):
+            try:
+                print(f"[INFO] Loading mean images from {filename}")
+                mean_images = np.load(filename, allow_pickle=True).item()
+            except Exception as e:
+                print(f"[WARN] Could not load mean images from {filename}: {e}")
+
+        # Si no se pudo cargar, los calcula
+        if mean_images is None:
+            print("[INFO] Computing mean images...")
+            mean_images = self._compute_stat_images("mean")
+            if filename:
+                np.save(filename, mean_images)
+                print(f"[INFO] Saved mean images to {filename}")
+
+        # Plotear siempre
         cols, rows = 3, (len(mean_images) + 2) // 3
-        plt.figure(figsize=(cols*4, rows*4))
+        plt.figure(figsize=(cols * 4, rows * 4))
         for i, (cls, img) in enumerate(mean_images.items()):
             plt.subplot(rows, cols, i + 1)
             plt.imshow(img)
             plt.title(f"Mean {cls}")
             plt.axis("off")
         plt.tight_layout()
-        if filename:
-            plt.savefig(filename, dpi=150)
         plt.show()
+
         return mean_images
 
     def plot_median_images_per_class(self, filename: Optional[str] = None):
@@ -196,44 +214,39 @@ class EdaAnalyzer:
         plt.show()
         return median_images
 
-    def plot_pixel_distribution_correlation_ordered(self, bins=32):
-        """Compute histograms per class, correlate and plot reordered matrix."""
-        classes = self.df['label'].unique()
-        histograms = {}
+    def plot_median_images_per_class(self, filename: Optional[str] = None):
+        """Compute or load and plot median images per class."""
+        
+        median_images = None
 
-        for cls in classes:
-            subset = self.df[self.df['label'] == cls]
-            hist_accum = None
-            for _, row in subset.iterrows():
-                img_path = os.path.join(self.dataset_path, "images", row['label'], row['filename'])
-                try:
-                    img = Image.open(img_path).convert("RGB")
-                    arr = np.array(img)
-                    hist, _ = np.histogramdd(arr.reshape(-1, 3), bins=(bins, bins, bins), range=((0, 256),)*3)
-                    hist_accum = hist if hist_accum is None else hist_accum + hist
-                except:
-                    continue
-            if hist_accum is not None:
-                hist_flat = hist_accum.flatten()
-                histograms[cls] = hist_flat / np.sum(hist_flat)
+        # Si existe el archivo, intenta leerlo
+        if filename and os.path.exists(filename):
+            try:
+                print(f"[INFO] Loading median images from {filename}")
+                median_images = np.load(filename, allow_pickle=True).item()
+            except Exception as e:
+                print(f"[WARN] Could not load median images from {filename}: {e}")
 
-        hist_df = pd.DataFrame(histograms).T
-        corr = hist_df.T.corr()
+        # Si no se pudo cargar, las calcula
+        if median_images is None:
+            print("[INFO] Computing median images...")
+            median_images = self._compute_stat_images("median")
+            if filename:
+                np.save(filename, median_images)
+                print(f"[INFO] Saved median images to {filename}")
 
-        condensed = pdist(corr.values, metric='euclidean')
-        link = linkage(condensed, method='average')
-        dendro = dendrogram(link, no_plot=True)
-        idx = dendro['leaves']
-        corr_reordered = corr.values[idx][:, idx]
-        reordered_labels = [corr.index[i] for i in idx]
-
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(corr_reordered, cmap="magma", annot=True, fmt=".2f",
-                    xticklabels=reordered_labels, yticklabels=reordered_labels)
-        plt.title("Pixel Distribution Correlation (Reordered)", fontsize=14, fontweight="bold")
-        plt.xticks(rotation=45, ha='right')
+        # Plotear siempre
+        cols, rows = 3, (len(median_images) + 2) // 3
+        plt.figure(figsize=(cols * 4, rows * 4))
+        for i, (cls, img) in enumerate(median_images.items()):
+            plt.subplot(rows, cols, i + 1)
+            plt.imshow(img)
+            plt.title(f"Median {cls}")
+            plt.axis("off")
         plt.tight_layout()
         plt.show()
+
+        return median_images
 
     def compute_cosine_similarity(self, mean_images: dict, channel: Optional[int] = None):
         """
