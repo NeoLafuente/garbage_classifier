@@ -232,9 +232,7 @@ def model_training_tab(carbon_display):
         gr.Markdown("---")
         gr.Markdown(
             "**🚗 Car Distance Comparison:** Based on average European car emissions (120g CO₂/km). "
-            "This helps put the carbon footprint in perspective.\n\n"
-            "**Note:** Training uses the same codebase as `source/train.py`. "
-            "Carbon emissions data is saved to `emissions.csv` in the model directory. "
+            "Carbon Footprint was calculated using CodeCarbon. "
             "Learn more about CodeCarbon at [codecarbon.io](https://codecarbon.io/)"
         )
         
