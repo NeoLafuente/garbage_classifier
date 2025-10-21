@@ -23,7 +23,7 @@ def main():
         # Header with carbon counter
         with gr.Row():
             gr.Markdown("# 🗑️♻️ Garbage Classifier Interactive Demo")
-            carbon_display = gr.Markdown(
+            carbon_display = gr.HTML(
                 value=update_carbon_display(),
                 elem_id="carbon-counter"
             )
@@ -46,25 +46,24 @@ def main():
             function() {
                 const style = document.createElement('style');
                 style.textContent = `
-                    #carbon-counter, 
-                    #carbon-counter * {
-                        color: white !important;
-                    }
                     #carbon-counter {
-                        text-align: right;
-                        font-size: 1.1em;
+                        color: white !important;
+                        font-size: 1.0em;
                         font-weight: bold;
-                        padding: 10px;
+                        padding: 12px 20px;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         border-radius: 8px;
                         margin-left: auto;
-                        min-width: 300px;
+                        min-width: 500px;
+                        max-width: 800px;
+                    }
+                    #carbon-counter * {
+                        color: white !important;
                     }
                 `;
                 document.head.appendChild(style);
             }
             """
-
         )
 
     demo.launch(share=True)
