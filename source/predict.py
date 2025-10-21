@@ -1,43 +1,9 @@
+# source/predict.py
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Garbage Classification Prediction Script.
-
-This script loads a trained GarbageClassifier model and performs inference
-on images to predict their garbage category. The script can accept either
-a single image path or a directory path as a command-line argument, or use
-a default sample image.
-
-The prediction uses a pretrained ResNet18 model fine-tuned for 6-class
-garbage classification (cardboard, glass, metal, paper, plastic, trash).
-
-Usage
------
-Command line:
-
-    $ uv run predict.py <path_to_image_or_folder>
-
-Examples
---------
-Predict with custom image:
-
-    $ uv run predict.py img.jpg
-
-Predict with folder:
-
-    $ uv run predict.py /path/to/images/
-
-Predict with default sample image:
-
-    $ uv run predict.py
-
-Notes
------
-- The model checkpoint path is configured in `utils.config`
-- Images are automatically preprocessed using ImageNet normalization
-- Prediction runs on GPU if available, otherwise falls back to CPU
-- When processing folders, only common image formats are considered
-  (jpg, jpeg, png, bmp, gif, tiff)
+...
 """
 __docformat__ = "numpy"
 
@@ -48,81 +14,275 @@ from torchvision import models
 from PIL import Image
 from source.utils import config as cfg
 from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
+from codecarbon import EmissionsTracker
 
 
-def predict_image(image_path, model, transform, device, class_names):
+# ========================
+# CORE PREDICTION FUNCTIONS (importable)
+# ========================
+
+def load_model_for_inference(model_path=None, device=None):
+    """
+    Load a trained model for inference.
+    
+    Parameters
+    ----------
+    model_path : str or Path, optional
+        Path to model checkpoint. If None, uses cfg.MODEL_PATH
+    device : torch.device, optional
+        Device to load model on. If None, auto-selects GPU/CPU
+        
+    Returns
+    -------
+    tuple of (GarbageClassifier, torch.device, torchvision.transforms.Compose)
+        Loaded model, device, and image transform pipeline
+        
+    Examples
+    --------
+    >>> model, device, transform = load_model_for_inference()
+    >>> # Use in Gradio or other applications
+    """
+    if model_path is None:
+        model_path = cfg.MODEL_PATH
+    
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    model = GarbageClassifier.load_from_checkpoint(
+        model_path,
+        num_classes=cfg.NUM_CLASSES
+    )
+    model = model.to(device)
+    model.eval()
+    
+    transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
+    
+    return model, device, transform
+
+
+def predict_image(image_path, model=None, transform=None, device=None, 
+                  class_names=None, track_carbon=False):
     """
     Predict the garbage category of an input image.
 
     Parameters
     ----------
-    image_path : str or Path
-        Path to the image file to classify.
-    model : GarbageClassifier
-        The loaded model for inference.
-    transform : torchvision.transforms.Compose
-        Image transformation pipeline to apply before inference.
-    device : torch.device
-        Device (CPU or GPU) where tensors will be allocated.
-    class_names : list of str
-        List of class names corresponding to model outputs.
+    image_path : str, Path, or PIL.Image
+        Path to image file or PIL Image object
+    model : GarbageClassifier, optional
+        Loaded model. If None, loads from cfg.MODEL_PATH
+    transform : torchvision.transforms.Compose, optional
+        Image transformation pipeline. If None, uses default ResNet18 transforms
+    device : torch.device, optional
+        Device for inference. If None, auto-selects GPU/CPU
+    class_names : list of str, optional
+        Class names. If None, uses cfg.CLASS_NAMES
+    track_carbon : bool, default=False
+        Whether to track carbon emissions
 
     Returns
     -------
-    tuple of (str, int)
-        A tuple containing the predicted class name and class index.
+    dict
+        Dictionary containing:
+        - 'predicted_class': str, predicted class name
+        - 'predicted_idx': int, predicted class index
+        - 'confidence': float, confidence score (0-1)
+        - 'probabilities': dict, all class probabilities
+        - 'emissions': dict or None, carbon emissions data if tracked
 
     Examples
     --------
-    >>> pred_class, pred_idx = predict_image(
-            "sample.jpg", model, transform, device, class_names
-        )
-    >>> print(f"Prediction: {pred_class}")
-
-    Notes
-    -----
-    The function applies the appropriate image transformations for the
-    ResNet18 model and automatically handles RGB conversion for images
-    with different color modes.
+    >>> result = predict_image("sample.jpg", track_carbon=True)
+    >>> print(f"Prediction: {result['predicted_class']}")
+    >>> print(f"Confidence: {result['confidence']:.2%}")
     """
-    image = Image.open(image_path).convert("RGB")
-    tensor = transform(image).unsqueeze(0).to(device)
+    # Load model if not provided
+    if model is None or transform is None or device is None:
+        model, device, transform = load_model_for_inference(device=device)
+    
+    if class_names is None:
+        class_names = cfg.CLASS_NAMES
+    
+    # Start carbon tracking if enabled
+    emissions_data = None
+    if track_carbon:
+        tracker = EmissionsTracker(
+            project_name="garbage_classifier_inference",
+            output_dir=str(Path(cfg.MODEL_PATH).parent),
+            log_level="warning"
+        )
+        tracker.start()
+    
+    try:
+        # Handle both file paths and PIL Images
+        if isinstance(image_path, (str, Path)):
+            image = Image.open(image_path).convert("RGB")
+        elif isinstance(image_path, Image.Image):
+            image = image_path.convert("RGB")
+        else:
+            # Assume numpy array (from Gradio)
+            image = Image.fromarray(image_path).convert("RGB")
+        
+        tensor = transform(image).unsqueeze(0).to(device)
 
-    with torch.no_grad():
-        outputs = model(tensor)
-        pred_idx = outputs.argmax(1).item()
-        pred_class = class_names[pred_idx]
+        with torch.no_grad():
+            outputs = model(tensor)
+            probs = torch.softmax(outputs, dim=1)[0]
+            pred_idx = outputs.argmax(1).item()
+            pred_class = class_names[pred_idx]
+            confidence = probs[pred_idx].item()
+        
+        # Get all probabilities
+        all_probs = {
+            class_names[i]: probs[i].item() 
+            for i in range(len(class_names))
+        }
+        
+        # Stop carbon tracking
+        if track_carbon:
+            emissions_kg = tracker.stop()
+            from source.utils.carbon_utils import kg_co2_to_car_distance, format_car_distance
+            car_distances = kg_co2_to_car_distance(emissions_kg)
+            emissions_data = {
+                'emissions_kg': emissions_kg,
+                'emissions_g': emissions_kg * 1000,
+                'car_distance_km': car_distances['distance_km'],
+                'car_distance_m': car_distances['distance_m'],
+                'car_distance_formatted': format_car_distance(emissions_kg)
+            }
+        
+        return {
+            'predicted_class': pred_class,
+            'predicted_idx': pred_idx,
+            'confidence': confidence,
+            'probabilities': all_probs,
+            'emissions': emissions_data,
+            'image': image  # Return PIL image for display
+        }
+    
+    except Exception as e:
+        if track_carbon:
+            tracker.stop()
+        raise e
 
-    return pred_class, pred_idx
+
+def predict_batch(image_paths, model=None, transform=None, device=None,
+                  class_names=None, track_carbon=False, progress_callback=None):
+    """
+    Predict garbage categories for multiple images.
+    
+    Parameters
+    ----------
+    image_paths : list of (str or Path)
+        List of image file paths
+    model : GarbageClassifier, optional
+        Loaded model. If None, loads from cfg.MODEL_PATH
+    transform : torchvision.transforms.Compose, optional
+        Image transformation pipeline
+    device : torch.device, optional
+        Device for inference
+    class_names : list of str, optional
+        Class names
+    track_carbon : bool, default=False
+        Whether to track carbon emissions
+    progress_callback : callable, optional
+        Callback function(current, total, message) for progress updates
+        
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - 'results': list of prediction dicts
+        - 'summary': summary statistics
+        - 'emissions': carbon emissions data if tracked
+        
+    Examples
+    --------
+    >>> results = predict_batch(["img1.jpg", "img2.jpg"], track_carbon=True)
+    >>> for r in results['results']:
+    ...     print(f"{r['filename']}: {r['predicted_class']}")
+    """
+    # Load model once for all images
+    if model is None or transform is None or device is None:
+        model, device, transform = load_model_for_inference(device=device)
+    
+    if class_names is None:
+        class_names = cfg.CLASS_NAMES
+    
+    # Start carbon tracking if enabled
+    emissions_data = None
+    if track_carbon:
+        tracker = EmissionsTracker(
+            project_name="garbage_classifier_batch_inference",
+            output_dir=str(Path(cfg.MODEL_PATH).parent),
+            log_level="warning"
+        )
+        tracker.start()
+    
+    results = []
+    total = len(image_paths)
+    
+    for idx, image_path in enumerate(image_paths):
+        if progress_callback:
+            progress_callback(idx + 1, total, f"Processing {Path(image_path).name}")
+        
+        try:
+            result = predict_image(
+                image_path, 
+                model=model, 
+                transform=transform, 
+                device=device,
+                class_names=class_names,
+                track_carbon=False  # Don't track individual images
+            )
+            result['filename'] = Path(image_path).name
+            result['status'] = 'success'
+            results.append(result)
+            
+        except Exception as e:
+            results.append({
+                'filename': Path(image_path).name,
+                'status': 'error',
+                'error': str(e)
+            })
+    
+    # Stop carbon tracking
+    if track_carbon:
+        emissions_kg = tracker.stop()
+        from source.utils.carbon_utils import kg_co2_to_car_distance, format_car_distance
+        car_distances = kg_co2_to_car_distance(emissions_kg)
+        emissions_data = {
+            'emissions_kg': emissions_kg,
+            'emissions_g': emissions_kg * 1000,
+            'car_distance_km': car_distances['distance_km'],
+            'car_distance_m': car_distances['distance_m'],
+            'car_distance_formatted': format_car_distance(emissions_kg),
+            'emissions_per_image_g': (emissions_kg * 1000) / len(image_paths)
+        }
+    
+    # Summary
+    successful = len([r for r in results if r.get('status') == 'success'])
+    summary = {
+        'total_images': total,
+        'successful': successful,
+        'failed': total - successful
+    }
+    
+    return {
+        'results': results,
+        'summary': summary,
+        'emissions': emissions_data
+    }
 
 
 def get_image_files(path):
     """
     Get all valid image files from a directory.
-
-    Parameters
-    ----------
-    path : Path
-        Path to the directory to search for images.
-
-    Returns
-    -------
-    list of Path
-        Sorted list of Path objects pointing to valid image files.
-
-    Notes
-    -----
-    Supported image formats: jpg, jpeg, png, bmp, gif, tiff, tif
-    Files are returned in sorted order for consistent processing.
+    
+    [Keep existing implementation - no changes needed]
     """
     valid_extensions = {
-        '.jpg',
-        '.jpeg',
-        '.png',
-        '.bmp',
-        '.gif',
-        '.tiff',
-        '.tif'
+        '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.tif'
     }
     image_files = [
         f for f in path.iterdir()
@@ -131,22 +291,26 @@ def get_image_files(path):
     return sorted(image_files)
 
 
-def predict_folder(folder_path):
-    """
-    Predict the garbage category for all images in a folder.
+# ========================
+# CLI INTERFACE (for terminal use)
+# ========================
 
-    Parameters
-    ----------
-    folder_path : str or Path
-        Path to the folder containing images to classify.
+def predict_single_image_cli(image_path):
+    """CLI wrapper for single image prediction"""
+    print(f"Device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')}")
+    print("Loading model...")
+    
+    result = predict_image(image_path, track_carbon=False)
+    
+    print(f"\nPrediction: {result['predicted_class']} (class {result['predicted_idx']})")
+    print(f"Confidence: {result['confidence']:.2%}")
+    print("\nAll probabilities:")
+    for class_name, prob in result['probabilities'].items():
+        print(f"  {class_name}: {prob:.2%}")
 
-    Notes
-    -----
-    - The model is loaded once and reused for all images for efficiency
-    - Progress is displayed for each processed image
-    - Invalid images are skipped with a warning message
-    - A summary with all predictions is displayed at the end
-    """
+
+def predict_folder_cli(folder_path):
+    """CLI wrapper for folder prediction"""
     folder = Path(folder_path)
 
     if not folder.exists():
@@ -164,94 +328,32 @@ def predict_folder(folder_path):
         sys.exit(1)
 
     print(f"Found {len(image_files)} image(s) to process\n")
-
-    # Setup device and model
-    class_names = cfg.CLASS_NAMES
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
-
-    print("Loading model...")
-    model = GarbageClassifier.load_from_checkpoint(
-        cfg.MODEL_PATH,
-        num_classes=cfg.NUM_CLASSES
+    print(f"Device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')}")
+    
+    def progress_callback(current, total, message):
+        print(f"[{current}/{total}] {message}")
+    
+    batch_result = predict_batch(
+        image_files, 
+        track_carbon=False,
+        progress_callback=progress_callback
     )
-    model = model.to(device)
-    model.eval()
-
-    print("Preparing transformations...\n")
-    transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-
-    # Process all images
-    results = []
-    for idx, image_path in enumerate(image_files, 1):
-        try:
-            print(f"[{idx}/{len(image_files)}] Processing: {image_path.name}")
-            pred_class, pred_idx = predict_image(
-                image_path, model, transform, device, class_names
-            )
-            print(f"  -> Prediction: {pred_class} (class {pred_idx})\n")
-            results.append((image_path.name, pred_class, pred_idx))
-        except Exception as e:
-            print(f"  -> Error processing {image_path.name}: {str(e)}\n")
-            continue
-
+    
     # Print summary
-    if results:
-        print("=" * 60)
-        print("PREDICTION SUMMARY")
-        print("=" * 60)
-        for filename, pred_class, pred_idx in results:
-            print(f"{filename:<40} -> {pred_class} (class {pred_idx})")
-        print("=" * 60)
-
-
-def predict_single_image(image_path):
-    """
-    Predict the garbage category for a single image.
-
-    Parameters
-    ----------
-    image_path : str or Path
-        Path to the image file to classify.
-
-    Notes
-    -----
-    This function handles the complete prediction pipeline for a single
-    image, including model loading, device selection, and result display.
-    """
-    class_names = cfg.CLASS_NAMES
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
-
-    print("Loading model...")
-    model = GarbageClassifier.load_from_checkpoint(
-        cfg.MODEL_PATH,
-        num_classes=cfg.NUM_CLASSES
-    )
-    model = model.to(device)
-    model.eval()
-
-    print("Transforming image...")
-    transform = models.ResNet18_Weights.IMAGENET1K_V1.transforms()
-
-    pred_class, pred_idx = predict_image(
-        image_path, model, transform, device, class_names
-    )
-    print(f"Prediction: {pred_class} (class {pred_idx})")
+    print("\n" + "=" * 60)
+    print("PREDICTION SUMMARY")
+    print("=" * 60)
+    for result in batch_result['results']:
+        if result['status'] == 'success':
+            print(f"{result['filename']:<40} -> {result['predicted_class']} ({result['confidence']:.2%})")
+        else:
+            print(f"{result['filename']:<40} -> ERROR: {result['error']}")
+    print("=" * 60)
 
 
 def main():
     """
     Main entry point for the prediction script.
-
-    Parses command-line arguments and performs prediction on the specified
-    image, folder, or a default sample image. Automatically detects whether
-    the input is a file or directory and processes accordingly.
-
-    Notes
-    -----
-    When a directory is provided, all valid image files within it are
-    processed sequentially using the same loaded model for efficiency.
     """
     if len(sys.argv) > 2:
         print("Usage: uv run predict.py <path_to_image_or_folder>")
@@ -261,7 +363,7 @@ def main():
         sys.exit(1)
     elif len(sys.argv) == 1:
         image_path = cfg.SAMPLE_IMG_PATH
-        predict_single_image(image_path)
+        predict_single_image_cli(image_path)
     else:
         input_path = Path(sys.argv[1])
 
@@ -270,9 +372,9 @@ def main():
             sys.exit(1)
 
         if input_path.is_dir():
-            predict_folder(input_path)
+            predict_folder_cli(input_path)
         else:
-            predict_single_image(input_path)
+            predict_single_image_cli(input_path)
 
 
 if __name__ == "__main__":
