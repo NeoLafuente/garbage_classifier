@@ -22,6 +22,7 @@ dependencies = [
     "gdown",
     "gradio>=5.49.1",
     "codecarbon>=3.0.7",
+    "opencv-python>=4.11.0.86",
 ]
 authors = [
 	{name = "Melchor Lafuente"},

@@ -11,6 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist
 from typing import Optional
+import cv2
 
 
 class EdaAnalyzer:
@@ -85,7 +86,7 @@ class EdaAnalyzer:
 
         cols, rows = 3, (len(classes) + 2) // 3
         fig, axes = plt.subplots(rows, cols, figsize=(cols*4, rows*4))
-        axes = axes.flatten()  # para indexar fácilmente incluso si rows*cols > len(classes)
+        axes = axes.flatten() 
 
         for i, cls in enumerate(classes):
             img_filename = df[df['label'] == cls].sample(1).iloc[0]['filename']
@@ -100,7 +101,6 @@ class EdaAnalyzer:
                 spine.set_edgecolor(class_colors[cls])
                 spine.set_linewidth(4)
 
-        # Si sobran axes vacíos, los ocultamos
         for j in range(i+1, len(axes)):
             axes[j].axis("off")
 
@@ -124,7 +124,7 @@ class EdaAnalyzer:
         ax.set_title("Class Distribution", fontsize=16)
         ax.set_xlabel("Class")
         ax.set_ylabel("Count")
-        plt.setp(ax.get_xticklabels(), rotation=45)  # rotar etiquetas
+        plt.setp(ax.get_xticklabels(), rotation=45)
         plt.tight_layout()
 
         if filename:
@@ -196,7 +196,6 @@ class EdaAnalyzer:
         
         mean_images = None
 
-        # Si existe el archivo, intenta leerlo
         if filename and os.path.exists(filename):
             try:
                 print(f"[INFO] Loading mean images from {filename}")
@@ -204,7 +203,6 @@ class EdaAnalyzer:
             except Exception as e:
                 print(f"[WARN] Could not load mean images from {filename}: {e}")
 
-        # Si no se pudo cargar, los calcula
         if mean_images is None:
             print("[INFO] Computing mean images...")
             mean_images = self._compute_stat_images("mean")
@@ -215,7 +213,7 @@ class EdaAnalyzer:
         # --- Plot ---
         cols, rows = 3, (len(mean_images) + 2) // 3
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
-        axes = axes.flatten()  # facilitar indexado
+        axes = axes.flatten() 
 
         for i, (cls, img) in enumerate(mean_images.items()):
             ax = axes[i]
@@ -223,9 +221,83 @@ class EdaAnalyzer:
             ax.set_title(f"Mean {cls}")
             ax.axis("off")
 
-        # ocultar ejes sobrantes
         for j in range(i+1, len(axes)):
             axes[j].axis("off")
+
+        plt.tight_layout()
+
+        return fig
+
+    def plot_mean_images_per_class_with_otsu(self, threshold: float = 0.0, filename: Optional[str] = None) -> Figure:
+        """
+        Plots the mean images per class applying an adjustable Otsu threshold.
+
+        Parameters:
+            threshold (float): Threshold adjustment (-1 = maximum, 0 = Otsu, 1 = minimum)
+            filename (str, optional): Path to the .npy file containing mean_images, 
+                                      or destination PDF path if saving the figure.
+
+        Returns:
+            fig (matplotlib.figure.Figure): Generated figure.
+        """
+
+        mean_images = None
+
+        if filename and os.path.exists(filename) and filename.endswith(".npy"):
+            try:
+                print(f"[INFO] Loading mean images from {filename}")
+                mean_images = np.load(filename, allow_pickle=True).item()
+            except Exception as e:
+                print(f"[WARN] Could not load mean images from {filename}: {e}")
+                return None
+        else:
+            print("[WARN] No mean images found or invalid file path.")
+            return None
+
+        n_classes = len(mean_images)
+        n_cols = min(3, n_classes)
+        n_rows = int(np.ceil(n_classes / n_cols))
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5 * n_rows))
+        axes = np.array(axes).flatten()
+
+        for i, (cls, mean_image) in enumerate(mean_images.items()):
+            ax = axes[i]
+            gray = cv2.cvtColor(mean_image, cv2.COLOR_RGB2GRAY)
+
+            if gray.dtype != np.uint8:
+                gray = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+
+            otsu_thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+            adj = np.clip(threshold, -1, 1)
+            if adj == -1:
+                final_thresh = 255
+            elif adj == 1:
+                final_thresh = 0
+            else:
+                if adj < 0:
+                    final_thresh = otsu_thresh + (255 - otsu_thresh) * (-adj)
+                else:
+                    final_thresh = otsu_thresh - (otsu_thresh - 0) * adj
+
+            _, binary = cv2.threshold(gray, final_thresh, 255, cv2.THRESH_BINARY)
+
+            mask = (binary == 0).astype(np.uint8)
+            kernel = np.ones((3, 3), np.uint8)
+            mask_dilated = cv2.dilate(mask, kernel, iterations=1)
+            red_overlay = np.zeros((*mask.shape, 4))
+            red_overlay[mask_dilated == 1] = [1, 0, 0, 0.25]
+
+            ax.imshow(mean_image)
+            ax.imshow(red_overlay)
+            ax.set_title(f"{cls}\nOtsu adj={threshold:.2f} (thr={final_thresh:.1f})")
+            ax.axis("off")
+
+            contours, _ = cv2.findContours(mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                contour = contour.squeeze()
+                if contour.ndim == 2:
+                    ax.plot(contour[:, 0], contour[:, 1], color="red", linewidth=2)
 
         plt.tight_layout()
 
@@ -236,7 +308,6 @@ class EdaAnalyzer:
         
         median_images = None
 
-        # Si existe el archivo, intenta leerlo
         if filename and os.path.exists(filename):
             try:
                 print(f"[INFO] Loading median images from {filename}")
@@ -244,7 +315,6 @@ class EdaAnalyzer:
             except Exception as e:
                 print(f"[WARN] Could not load median images from {filename}: {e}")
 
-        # Si no se pudo cargar, las calcula
         if median_images is None:
             print("[INFO] Computing median images...")
             median_images = self._compute_stat_images("median")
@@ -255,7 +325,7 @@ class EdaAnalyzer:
         # --- Plot ---
         cols, rows = 3, (len(median_images) + 2) // 3
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
-        axes = axes.flatten()  # facilitar indexado
+        axes = axes.flatten()
 
         for i, (cls, img) in enumerate(median_images.items()):
             ax = axes[i]
@@ -263,12 +333,78 @@ class EdaAnalyzer:
             ax.set_title(f"Median {cls}")
             ax.axis("off")
 
-        # ocultar ejes sobrantes
         for j in range(i+1, len(axes)):
             axes[j].axis("off")
 
         plt.tight_layout()
 
+        return fig
+
+    def plot_median_images_per_class_with_otsu(self, threshold: float = 0.0, filename: Optional[str] = None) -> Figure:
+        """
+        Plots the median images per class applying an adjustable Otsu threshold.
+        Parameters:
+            threshold (float): Threshold adjustment (-1 = maximum, 0 = Otsu, 1 = minimum)
+            filename (str, optional): Path to the .npy file containing median_images, 
+                                    or destination PDF path if saving the figure.
+        Returns:
+            fig (matplotlib.figure.Figure): Generated figure.
+        """
+        median_images = None
+        
+        if filename and os.path.exists(filename) and filename.endswith(".npy"):
+            try:
+                print(f"[INFO] Loading median images from {filename}")
+                median_images = np.load(filename, allow_pickle=True).item()
+            except Exception as e:
+                print(f"[WARN] Could not load median images from {filename}: {e}")
+        
+        if median_images is None:
+            print("[INFO] Computing median images...")
+            median_images = self._compute_stat_images("median")
+            if filename and filename.endswith(".npy"):
+                np.save(filename, median_images)
+                print(f"[INFO] Saved median images to {filename}")
+        
+        n_classes = len(median_images)
+        n_cols = min(3, n_classes)
+        n_rows = int(np.ceil(n_classes / n_cols))
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5 * n_rows))
+        axes = np.array(axes).flatten()
+        
+        for i, (cls, median_image) in enumerate(median_images.items()):
+            ax = axes[i]
+            gray = cv2.cvtColor(median_image, cv2.COLOR_RGB2GRAY)
+            if gray.dtype != np.uint8:
+                gray = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+            otsu_thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            adj = np.clip(threshold, -1, 1)
+            if adj == -1:
+                final_thresh = 255
+            elif adj == 1:
+                final_thresh = 0
+            else:
+                if adj < 0:
+                    final_thresh = otsu_thresh + (255 - otsu_thresh) * (-adj)
+                else:
+                    final_thresh = otsu_thresh - (otsu_thresh - 0) * adj
+            _, binary = cv2.threshold(gray, final_thresh, 255, cv2.THRESH_BINARY)
+            mask = (binary == 0).astype(np.uint8)
+            kernel = np.ones((3, 3), np.uint8)
+            mask_dilated = cv2.dilate(mask, kernel, iterations=1)
+            red_overlay = np.zeros((*mask.shape, 4))
+            red_overlay[mask_dilated == 1] = [1, 0, 0, 0.25]
+            ax.imshow(median_image)
+            ax.imshow(red_overlay)
+            ax.set_title(f"{cls}\nOtsu adj={threshold:.2f} (thr={final_thresh:.1f})")
+            ax.axis("off")
+            contours, _ = cv2.findContours(mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                contour = contour.squeeze()
+                if contour.ndim == 2:
+                    ax.plot(contour[:, 0], contour[:, 1], color="red", linewidth=2)
+        
+        plt.tight_layout()
         return fig
 
     def compute_cosine_similarity(self, mean_images: dict, channel: Optional[int] = None):
