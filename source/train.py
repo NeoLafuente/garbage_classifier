@@ -103,11 +103,14 @@ def train_model(
     If progress_callback is provided, it receives status updates at key points
     during training initialization and completion.
     """
+
+    create_directory_structure()
+
     # Use config defaults if not provided
     if max_epochs is None:
         max_epochs = cfg.MAX_EPOCHS
     if model_save_path is None:
-        model_save_path = cfg.MODEL_PATH
+        model_save_path = cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
     if loss_curves_dir is None:
         loss_curves_dir = cfg.LOSS_CURVES_PATH
 

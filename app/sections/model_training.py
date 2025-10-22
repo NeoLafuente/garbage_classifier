@@ -245,6 +245,8 @@ def run_training(
                 "\n*Based on average European car emissions of 120g CO₂/km*"
             )
 
+        model_save_path = cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
+
         final_message = (
             f"✅ **Training Complete!**\n\n"
             f"### Training Configuration\n"
@@ -253,7 +255,7 @@ def run_training(
             f"- **Epochs:** {max_epochs}\n"
             f"{metrics_info}"
             f"\n### Output\n"
-            f"- **Model saved at:** `{cfg.MODEL_PATH}`\n"
+            f"- **Model saved at:** `{model_save_path}`\n"
             f"- **Loss curves saved at:** `{cfg.LOSS_CURVES_PATH}`"
             f"{emissions_info}"
         )

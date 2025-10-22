@@ -55,13 +55,13 @@ def load_model_for_inference(model_path=None, device=None):
     >>> # Use in Gradio app or API
     """
     if model_path is None:
-        model_path = cfg.MODEL_PATH
+        model_path = cfg.ensure_model_downloaded()
 
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = GarbageClassifier.load_from_checkpoint(
-        model_path, num_classes=cfg.NUM_CLASSES
+        str(model_path), num_classes=cfg.NUM_CLASSES
     )
     model = model.to(device)
     model.eval()

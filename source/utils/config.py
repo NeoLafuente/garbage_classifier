@@ -9,45 +9,267 @@ model parameters, and class definitions.
 
 Attributes
 ----------
-DATASET_PATH : str
-    Path to the raw garbage dataset directory containing training images.
-LOSS_CURVES_PATH : str
-    Directory path where training/validation loss and accuracy curves are
-    saved.
-MODEL_PATH : str
-    Path where the trained model checkpoint is saved or loaded from.
-SAMPLE_IMG_PATH : str
-    Path to a sample image used for default predictions.
+PROJECT_ROOT : Path
+    Root directory of the project (garbage_classifier/).
+DATA_DIR : Path
+    Directory containing all data (raw, processed, interim).
+MODELS_DIR : Path
+    Directory containing model weights and performance metrics.
+DATASET_PATH : Path
+    Path to the raw garbage dataset images.
+LOSS_CURVES_PATH : Path
+    Directory where training/validation curves are saved.
+MODEL_PATH : Path
+    Path to the best trained model checkpoint.
+SAMPLE_IMG_PATH : Path
+    Path to a sample image for testing predictions.
+MODEL_URL : str
+    GitHub Releases URL for downloading pretrained model.
 CLASS_NAMES : list of str
     List of garbage category names for classification.
-    Categories: cardboard, glass, metal, paper, plastic, trash.
+NUM_CLASSES : int
+    Number of classification categories.
 MAX_EPOCHS : int
     Maximum number of training epochs.
-NUM_CLASSES : int
-    Number of classification categories (derived from CLASS_NAMES length).
+BATCH_SIZE : int
+    Batch size for training and validation.
+LEARNING_RATE : float
+    Initial learning rate for optimizer.
+NUM_WORKERS : int
+    Number of worker processes for data loading.
+IMAGE_SIZE : tuple
+    Target image size for model input (height, width).
+MEAN : list of float
+    ImageNet normalization mean values for RGB channels.
+STD : list of float
+    ImageNet normalization standard deviation for RGB channels.
 
 Examples
 --------
->>> from utils import config as cfg
+>>> from source.utils import config as cfg
 >>> model = GarbageClassifier(num_classes=cfg.NUM_CLASSES)
 >>> trainer = pl.Trainer(max_epochs=cfg.MAX_EPOCHS)
+>>> model_path = cfg.ensure_model_downloaded()
 
 Notes
 -----
-All paths are relative to the project root directory. Ensure the directory
-structure matches the configured paths before running training or inference.
+All paths use pathlib.Path for cross-platform compatibility.
+The pretrained model is automatically downloaded from GitHub Releases
+if not found locally.
 """
 __docformat__ = "numpy"
 
-DATASET_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
-    data/raw/Garbage_Dataset_Classification/images/"
-LOSS_CURVES_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
-    models/performance/loss_curves/"
-MODEL_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
-    models/weights/model_resnet18_garbage.ckpt"
-SAMPLE_IMG_PATH = (
-    "/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/sample.jpg"
+from pathlib import Path
+import requests
+from tqdm import tqdm
+
+# ============================================
+# Project Structure
+# ============================================
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data"
+MODELS_DIR = PROJECT_ROOT / "models"
+
+# ============================================
+# Data Paths
+# ============================================
+RAW_DATA_DIR = DATA_DIR / "raw"
+DATASET_PATH = RAW_DATA_DIR / "Garbage_Dataset_Classification" / "images"
+SAMPLE_IMG_PATH = RAW_DATA_DIR / "sample.jpg"
+
+# ============================================
+# Model Paths
+# ============================================
+WEIGHTS_DIR = MODELS_DIR / "weights"
+BEST_MODEL_DIR = MODELS_DIR / "best"
+PERFORMANCE_DIR = MODELS_DIR / "performance"
+LOSS_CURVES_PATH = PERFORMANCE_DIR / "loss_curves"
+
+MODEL_FILENAME = "model_resnet18_garbage.ckpt"
+MODEL_PATH = BEST_MODEL_DIR / MODEL_FILENAME
+
+# ============================================
+# Model Download Configuration
+# ============================================
+GITHUB_USER = "NeoLafuente"
+GITHUB_REPO = "garbage_classifier"
+MODEL_VERSION = "v0.1.0"
+
+MODEL_URL = (
+    f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/"
+    f"releases/download/{MODEL_VERSION}/{MODEL_FILENAME}"
 )
+
+# ============================================
+# Class Configuration
+# ============================================
 CLASS_NAMES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
-MAX_EPOCHS = 10
 NUM_CLASSES = len(CLASS_NAMES)
+
+# ============================================
+# Training Hyperparameters
+# ============================================
+MAX_EPOCHS = 50
+BATCH_SIZE = 32
+LEARNING_RATE = 1e-3
+NUM_WORKERS = 4
+PATIENCE = 10
+
+# ============================================
+# Model Configuration
+# ============================================
+IMAGE_SIZE = (224, 224)
+MEAN = [0.485, 0.456, 0.406]  # ImageNet normalization
+STD = [0.229, 0.224, 0.225]
+
+
+# ============================================
+# Utility Functions
+# ============================================
+def download_file(url: str, destination: Path, chunk_size: int = 8192) -> None:
+    """
+    Download a file from URL with progress bar.
+
+    Parameters
+    ----------
+    url : str
+        URL of the file to download.
+    destination : Path
+        Local path where to save the file.
+    chunk_size : int, optional
+        Download chunk size in bytes, by default 8192.
+
+    Raises
+    ------
+    requests.HTTPError
+        If download fails (e.g., 404, 403).
+    requests.RequestException
+        If network error occurs.
+
+    Examples
+    --------
+    >>> download_file(
+    ...     "https://example.com/model.ckpt",
+    ...     Path("models/model.ckpt")
+    ... )
+    """
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"📥 Downloading from GitHub Releases...")
+    print(f"   URL: {url}")
+    print(f"   Destination: {destination}")
+
+    response = requests.get(url, stream=True, timeout=30)
+    response.raise_for_status()
+
+    total_size = int(response.headers.get("content-length", 0))
+
+    with open(destination, "wb") as f, tqdm(
+        desc=destination.name,
+        total=total_size,
+        unit="iB",
+        unit_scale=True,
+        unit_divisor=1024,
+    ) as progress_bar:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            size = f.write(chunk)
+            progress_bar.update(size)
+
+    print(f"✅ Download completed: {destination}")
+
+
+def ensure_model_downloaded() -> Path:
+    """
+    Ensure pretrained model is available, download if missing.
+
+    Returns
+    -------
+    Path
+        Path to the model checkpoint file.
+
+    Raises
+    ------
+    requests.RequestException
+        If model download fails.
+    FileNotFoundError
+        If model cannot be found or downloaded.
+
+    Notes
+    -----
+    Downloads the pretrained model from GitHub Releases if not found locally.
+    The model is saved in `models/best/model_resnet18_garbage.ckpt`.
+
+    The download URL is constructed from:
+    - GITHUB_USER: Your GitHub username
+    - GITHUB_REPO: Repository name
+    - MODEL_VERSION: Release tag (e.g., v0.1.0)
+    - MODEL_FILENAME: Model checkpoint filename
+
+    Examples
+    --------
+    >>> model_path = ensure_model_downloaded()
+    >>> model = GarbageClassifier.load_from_checkpoint(model_path)
+    """
+    if not MODEL_PATH.exists():
+        print("🔍 Pretrained model not found locally.")
+        print(f"   Expected location: {MODEL_PATH}")
+
+        try:
+            download_file(MODEL_URL, MODEL_PATH)
+        except requests.HTTPError as e:
+            print(f"\n❌ Failed to download model: {e}")
+            print(f"\n💡 Please:")
+            print(f"   1. Create a GitHub Release with tag '{MODEL_VERSION}'")
+            print(f"   2. Upload '{MODEL_FILENAME}' to the release")
+            print(f"   3. Or download manually from:")
+            print(f"      {MODEL_URL}")
+            print(f"   4. Save to: {MODEL_PATH}")
+            raise FileNotFoundError(f"Model not found: {MODEL_PATH}") from e
+        except requests.RequestException as e:
+            print(f"\n❌ Network error: {e}")
+            print(f"\n💡 Please check your internet connection or download manually:")
+            print(f"   URL: {MODEL_URL}")
+            print(f"   Destination: {MODEL_PATH}")
+            raise
+    else:
+        print(f"✅ Model found: {MODEL_PATH}")
+
+    return MODEL_PATH
+
+
+def create_directory_structure() -> None:
+    """
+    Create all necessary project directories if they don't exist.
+
+    Creates the following directory structure:
+    - data/raw/
+    - data/processed/
+    - data/interim/
+    - models/weights/
+    - models/best/
+    - models/performance/loss_curves/
+    - reports/figures/
+
+    Notes
+    -----
+    This function is idempotent - safe to call multiple times.
+
+    Examples
+    --------
+    >>> create_directory_structure()
+    >>> assert DATASET_PATH.parent.exists()
+    """
+    directories = [
+        DATA_DIR / "raw",
+        DATA_DIR / "processed",
+        DATA_DIR / "interim",
+        WEIGHTS_DIR,
+        BEST_MODEL_DIR,
+        LOSS_CURVES_PATH,
+        PROJECT_ROOT / "reports" / "figures",
+    ]
+
+    for directory in directories:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    print("✅ Directory structure created")

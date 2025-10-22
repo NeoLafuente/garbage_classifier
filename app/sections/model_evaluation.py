@@ -77,11 +77,12 @@ def get_available_models():
         'Latest Trained Model': 'models/resnet18_garbage.ckpt'
     }
     """
+    best_model_path = cfg.ensure_model_downloaded()
     models_dict = {
-        "Best Model (Provided)": str(Path(
-            "models/best/model_resnet18_garbage.ckpt"
-        )),
-        "Latest Trained Model": str(cfg.MODEL_PATH),
+        "Best Model (Provided)": str(best_model_path),
+        "Latest Trained Model": str(
+            cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
+        ),
     }
     return models_dict
 
