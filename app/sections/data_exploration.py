@@ -16,14 +16,14 @@ The interface includes:
 
 Notes
 -----
-Prototype arrays (mean/median) are cached to disk in `app/sections/cached_data/`
-to avoid recomputation. The Otsu binarization feature helps visualize the
-dominant features of each class by thresholding the prototype images.
+Prototype arrays (mean/median) are cached to disk in
+`app/sections/cached_data/` to avoid recomputation.
+The Otsu binarization feature helps visualize the dominant
+features of each class by thresholding the prototype images.
 """
 __docformat__ = "numpy"
 
 import os
-import sys
 import gradio as gr
 
 from source.utils.custom_classes.EdaAnalyzer import EdaAnalyzer
@@ -34,15 +34,15 @@ def data_exploration_tab():
     Create the Data Exploration UI section.
 
     Builds an interactive Gradio interface for exploring the dataset through
-    various visualization methods. Includes buttons for different visualization
-    types and dynamic controls for prototype image processing.
+    various visualization methods. Includes buttons for different
+    visualization types and dynamic controls for prototype image processing.
 
     Returns
     -------
     list of gr.Component
         List of all Gradio components created in this tab, including buttons,
-        plots, checkboxes, and sliders. Returned for potential external reference
-        or testing purposes.
+        plots, checkboxes, and sliders. Returned for potential external
+        reference or testing purposes.
 
     Notes
     -----
@@ -160,7 +160,8 @@ def data_exploration_tab():
         enhanced visualization of class features.
         """
         fig = eda.plot_mean_images_per_class(filename=mean_arrays_path)
-        msg = "✅ Mean prototypes plotted. Enable Otsu binarization if you want to adjust."
+        msg = "✅ Mean prototypes plotted. Enable Otsu binarization if \
+            you want to adjust."
         return fig, msg, gr.update(visible=True), gr.update(visible=False)
 
     def toggle_mean_otsu_binarization(use_otsu, threshold):
@@ -224,34 +225,12 @@ def data_exploration_tab():
         )
         return fig
 
-    # def show_median_prototypes():
-    #     """Display median prototype images for each class."""
-    #     fig = eda.plot_median_images_per_class(filename=median_arrays_path)
-    #     msg = "✅ Median prototypes plotted. Enable Otsu binarization if you want to adjust."
-    #     return fig, msg, gr.update(visible=False), gr.update(visible=True)
-
-    # def toggle_median_otsu_binarization(use_otsu, threshold):
-    #     """Toggle between normal visualization and Otsu binarization."""
-    #     if use_otsu:
-    #         fig = eda.plot_median_images_per_class_with_otsu(
-    #             threshold=threshold, filename=median_arrays_path
-    #         )
-    #     else:
-    #         fig = eda.plot_median_images_per_class(filename=median_arrays_path)
-    #     return fig, gr.update(visible=use_otsu, interactive=use_otsu)
-
-    # def update_median_otsu_threshold(threshold):
-    #     """Update plot when slider moves (only when Otsu is enabled)."""
-    #     fig = eda.plot_median_images_per_class_with_otsu(
-    #         threshold=threshold, filename=median_arrays_path
-    #     )
-    #     return fig
-
     # --- UI Layout ---
     with gr.Row():
         gr.Markdown("### 📊 Data Exploration Section")
         gr.Markdown(
-            "Explore dataset structure, class balance, and prototype images below."
+            "Explore dataset structure, class balance, \
+                and prototype images below."
         )
 
     with gr.Row():
@@ -286,7 +265,7 @@ def data_exploration_tab():
             output_plot,
             output_text,
             otsu_mean_controls_row,
-        ],  # , otsu_median_controls_row],
+        ],
     )
     btn_distribution.click(
         fn=show_class_distribution,
@@ -294,17 +273,16 @@ def data_exploration_tab():
             output_plot,
             output_text,
             otsu_mean_controls_row,
-        ],  # , otsu_median_controls_row],
+        ],
     )
 
-    # ============================= MEAN ==================================
     btn_mean.click(
         fn=show_mean_prototypes,
         outputs=[
             output_plot,
             output_text,
             otsu_mean_controls_row,
-        ],  # , otsu_median_controls_row],
+        ],
     )
 
     otsu_mean_checkbox.change(

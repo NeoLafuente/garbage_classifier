@@ -21,6 +21,7 @@ from codecarbon import EmissionsTracker
 # CORE PREDICTION FUNCTIONS (importable)
 # ========================
 
+
 def load_model_for_inference(model_path=None, device=None):
     """
     Load a trained model and preprocessing pipeline for inference.
@@ -60,8 +61,7 @@ def load_model_for_inference(model_path=None, device=None):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = GarbageClassifier.load_from_checkpoint(
-        model_path,
-        num_classes=cfg.NUM_CLASSES
+        model_path, num_classes=cfg.NUM_CLASSES
     )
     model = model.to(device)
     model.eval()
@@ -71,8 +71,14 @@ def load_model_for_inference(model_path=None, device=None):
     return model, device, transform
 
 
-def predict_image(image_path, model=None, transform=None, device=None, 
-                  class_names=None, track_carbon=False):
+def predict_image(
+    image_path,
+    model=None,
+    transform=None,
+    device=None,
+    class_names=None,
+    track_carbon=False,
+):
     """
     Predict the garbage category of a single image.
 
@@ -88,7 +94,7 @@ def predict_image(image_path, model=None, transform=None, device=None,
     model : GarbageClassifier, optional
         Pre-loaded model. If None, loads from cfg.MODEL_PATH. Default is None.
     transform : torchvision.transforms.Compose, optional
-        Image preprocessing pipeline. If None, uses default ResNet18 transforms.
+        Image preprocessing pipeline. If None, uses default ResNet18's.
         Default is None.
     device : torch.device, optional
         Device for inference. If None, auto-selects GPU/CPU. Default is None.
@@ -132,7 +138,7 @@ def predict_image(image_path, model=None, transform=None, device=None,
     # Load model if not provided
     if model is None or transform is None or device is None:
         model, device, transform = load_model_for_inference(device=device)
-    
+
     if class_names is None:
         class_names = cfg.CLASS_NAMES
 
@@ -142,7 +148,7 @@ def predict_image(image_path, model=None, transform=None, device=None,
         tracker = EmissionsTracker(
             project_name="garbage_classifier_inference",
             output_dir=str(Path(cfg.MODEL_PATH).parent),
-            log_level="warning"
+            log_level="warning",
         )
         tracker.start()
 
@@ -167,30 +173,33 @@ def predict_image(image_path, model=None, transform=None, device=None,
 
         # Get all probabilities
         all_probs = {
-            class_names[i]: probs[i].item() 
-            for i in range(len(class_names))
+            class_names[i]: probs[i].item() for i in range(len(class_names))
         }
 
         # Stop carbon tracking
         if track_carbon:
             emissions_kg = tracker.stop()
-            from source.utils.carbon_utils import kg_co2_to_car_distance, format_car_distance
+            from source.utils.carbon_utils import (
+                kg_co2_to_car_distance,
+                format_car_distance,
+            )
+
             car_distances = kg_co2_to_car_distance(emissions_kg)
             emissions_data = {
-                'emissions_kg': emissions_kg,
-                'emissions_g': emissions_kg * 1000,
-                'car_distance_km': car_distances['distance_km'],
-                'car_distance_m': car_distances['distance_m'],
-                'car_distance_formatted': format_car_distance(emissions_kg)
+                "emissions_kg": emissions_kg,
+                "emissions_g": emissions_kg * 1000,
+                "car_distance_km": car_distances["distance_km"],
+                "car_distance_m": car_distances["distance_m"],
+                "car_distance_formatted": format_car_distance(emissions_kg),
             }
 
         return {
-            'predicted_class': pred_class,
-            'predicted_idx': pred_idx,
-            'confidence': confidence,
-            'probabilities': all_probs,
-            'emissions': emissions_data,
-            'image': image  # Return PIL image for display
+            "predicted_class": pred_class,
+            "predicted_idx": pred_idx,
+            "confidence": confidence,
+            "probabilities": all_probs,
+            "emissions": emissions_data,
+            "image": image,  # Return PIL image for display
         }
 
     except Exception as e:
@@ -199,12 +208,19 @@ def predict_image(image_path, model=None, transform=None, device=None,
         raise e
 
 
-def predict_batch(image_paths, model=None, transform=None, device=None,
-                  class_names=None, track_carbon=False, progress_callback=None):
+def predict_batch(
+    image_paths,
+    model=None,
+    transform=None,
+    device=None,
+    class_names=None,
+    track_carbon=False,
+    progress_callback=None,
+):
     """
     Predict garbage categories for multiple images.
 
-    Processes a list of images efficiently using a single loaded model instance.
+    Processes a list of images efficiently using a single loaded model.
     Optionally tracks carbon emissions for the entire batch. Supports progress
     callbacks for UI integration.
 
@@ -232,19 +248,21 @@ def predict_batch(image_paths, model=None, transform=None, device=None,
     dict
         Dictionary containing:
         - 'results': list of dict
-            List of prediction results (one per image). Each result dict has keys:
+            List of prediction results (one per image) with keys:
             'filename', 'predicted_class', 'predicted_idx', 'confidence',
-            'probabilities', 'status' ('success' or 'error'), and optionally 'error'.
+            'probabilities', 'status' ('success' / 'error'), [and 'error'].
         - 'summary': dict
-            Summary statistics with keys: 'total_images', 'successful', 'failed'.
+            Statistics with keys: 'total_images', 'successful', 'failed'.
         - 'emissions': dict or None
-            Carbon emissions data with 'emissions_per_image_g' if tracked, else None.
+            Carbon emissions data with 'emissions_per_image_g' if tracked,
+            else None.
 
     Notes
     -----
-    Failed predictions are recorded with status='error' and error message. Model
-    is loaded only once for efficiency. Individual image inference is not tracked
-    for carbon (only the batch total) to avoid overhead.
+    Failed predictions are recorded with status='error' and error message.
+    Model is loaded only once for efficiency. Individual image
+    inference is not trackedfor carbon (only the batch total)
+    to avoid overhead.
 
     Examples
     --------
@@ -266,7 +284,7 @@ def predict_batch(image_paths, model=None, transform=None, device=None,
         tracker = EmissionsTracker(
             project_name="garbage_classifier_batch_inference",
             output_dir=str(Path(cfg.MODEL_PATH).parent),
-            log_level="warning"
+            log_level="warning",
         )
         tracker.start()
 
@@ -275,55 +293,65 @@ def predict_batch(image_paths, model=None, transform=None, device=None,
 
     for idx, image_path in enumerate(image_paths):
         if progress_callback:
-            progress_callback(idx + 1, total, f"Processing {Path(image_path).name}")
+            progress_callback(
+                idx + 1, total,
+                f"Processing {Path(image_path).name}"
+            )
 
         try:
             result = predict_image(
-                image_path, 
-                model=model, 
-                transform=transform, 
+                image_path,
+                model=model,
+                transform=transform,
                 device=device,
                 class_names=class_names,
-                track_carbon=False  # Don't track individual images
+                track_carbon=False,
             )
-            result['filename'] = Path(image_path).name
-            result['status'] = 'success'
+            result["filename"] = Path(image_path).name
+            result["status"] = "success"
             results.append(result)
-    
+
         except Exception as e:
-            results.append({
-                'filename': Path(image_path).name,
-                'status': 'error',
-                'error': str(e)
-            })
+            results.append(
+                {
+                    "filename": Path(image_path).name,
+                    "status": "error", "error": str(e)
+                }
+            )
 
     # Stop carbon tracking
     if track_carbon:
         emissions_kg = tracker.stop()
-        from source.utils.carbon_utils import kg_co2_to_car_distance, format_car_distance
+        from source.utils.carbon_utils import (
+            kg_co2_to_car_distance,
+            format_car_distance,
+        )
+
         car_distances = kg_co2_to_car_distance(emissions_kg)
         emissions_data = {
-            'emissions_kg': emissions_kg,
-            'emissions_g': emissions_kg * 1000,
-            'car_distance_km': car_distances['distance_km'],
-            'car_distance_m': car_distances['distance_m'],
-            'car_distance_formatted': format_car_distance(emissions_kg),
-            'emissions_per_image_g': (emissions_kg * 1000) / len(image_paths)
+            "emissions_kg": emissions_kg,
+            "emissions_g": emissions_kg * 1000,
+            "car_distance_km": car_distances["distance_km"],
+            "car_distance_m": car_distances["distance_m"],
+            "car_distance_formatted": format_car_distance(emissions_kg),
+            "emissions_per_image_g": (emissions_kg * 1000) / len(image_paths),
         }
 
     # Summary
-    successful = len([r for r in results if r.get('status') == 'success'])
+    successful = len([r for r in results if r.get("status") == "success"])
     summary = {
-        'total_images': total,
-        'successful': successful,
-        'failed': total - successful
+        "total_images": total,
+        "successful": successful,
+        "failed": total - successful,
     }
 
-    return {
-        'results': results,
-        'summary': summary,
-        'emissions': emissions_data
+    final_result = {
+        "results": results,
+        "summary": summary,
+        "emissions": emissions_data
     }
+
+    return final_result
 
 
 def get_image_files(path):
@@ -350,10 +378,18 @@ def get_image_files(path):
     valid image files are found.
     """
     valid_extensions = {
-        '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.tif'
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".bmp",
+        ".gif",
+        ".tiff",
+        ".tif"
     }
+
     image_files = [
-        f for f in path.iterdir()
+        f
+        for f in path.iterdir()
         if f.is_file() and f.suffix.lower() in valid_extensions
     ]
     return sorted(image_files)
@@ -385,15 +421,19 @@ def predict_single_image_cli(image_path):
     - Prints device information to stdout.
     - Prints prediction result with confidence and probabilities to stdout.
     """
-    print(f"Device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')}")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Device: {device}")
     print("Loading model...")
 
     result = predict_image(image_path, track_carbon=False)
 
-    print(f"\nPrediction: {result['predicted_class']} (class {result['predicted_idx']})")
+    print(
+        f"\nPrediction: {result['predicted_class']} \
+        (class {result['predicted_idx']})"
+    )
     print(f"Confidence: {result['confidence']:.2%}")
     print("\nAll probabilities:")
-    for class_name, prob in result['probabilities'].items():
+    for class_name, prob in result["probabilities"].items():
         print(f"  {class_name}: {prob:.2%}")
 
 
@@ -440,24 +480,27 @@ def predict_folder_cli(folder_path):
         sys.exit(1)
 
     print(f"Found {len(image_files)} image(s) to process\n")
-    print(f"Device: {torch.device('cuda' if torch.cuda.is_available() else 'cpu')}")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Device: {device}")
 
     def progress_callback(current, total, message):
         print(f"[{current}/{total}] {message}")
 
     batch_result = predict_batch(
-        image_files, 
-        track_carbon=False,
-        progress_callback=progress_callback
+        image_files, track_carbon=False, progress_callback=progress_callback
     )
 
     # Print summary
     print("\n" + "=" * 60)
     print("PREDICTION SUMMARY")
     print("=" * 60)
-    for result in batch_result['results']:
-        if result['status'] == 'success':
-            print(f"{result['filename']:<40} -> {result['predicted_class']} ({result['confidence']:.2%})")
+    for result in batch_result["results"]:
+        if result["status"] == "success":
+            print(
+                f"{result['filename']:<40} \
+                    -> {result['predicted_class']} \
+                        ({result['confidence']:.2%})"
+            )
         else:
             print(f"{result['filename']:<40} -> ERROR: {result['error']}")
     print("=" * 60)

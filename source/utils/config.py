@@ -39,10 +39,15 @@ structure matches the configured paths before running training or inference.
 """
 __docformat__ = "numpy"
 
-DATASET_PATH = '/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/Garbage_Dataset_Classification/images/'
-LOSS_CURVES_PATH = '/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/performance/loss_curves/'
-MODEL_PATH = '/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/weights/model_resnet18_garbage.ckpt'
-SAMPLE_IMG_PATH = '/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/sample.jpg'
+DATASET_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
+    data/raw/Garbage_Dataset_Classification/images/"
+LOSS_CURVES_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
+    models/performance/loss_curves/"
+MODEL_PATH = "/home/alumno/Desktop/datos/SDOML/garbage_classifier/\
+    models/weights/model_resnet18_garbage.ckpt"
+SAMPLE_IMG_PATH = (
+    "/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/sample.jpg"
+)
 CLASS_NAMES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
 MAX_EPOCHS = 10
 NUM_CLASSES = len(CLASS_NAMES)

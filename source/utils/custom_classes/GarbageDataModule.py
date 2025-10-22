@@ -90,18 +90,15 @@ class GarbageDataModule(pl.LightningDataModule):
 
         # Load full dataset
         full_dataset = datasets.ImageFolder(
-            cfg.DATASET_PATH,
-            transform=self.transform
+            cfg.DATASET_PATH, transform=self.transform
         )
         targets = [label for _, label in full_dataset]
         self.num_classes = cfg.NUM_CLASSES
 
         # Stratified split 90/10
         train_idx, test_idx = train_test_split(
-            np.arange(len(targets)),
-            test_size=0.1,
-            stratify=targets,
-            random_state=42
+            np.arange(len(targets)), test_size=0.1,
+            stratify=targets, random_state=42
         )
 
         self.train_dataset = Subset(full_dataset, train_idx)
@@ -124,10 +121,12 @@ class GarbageDataModule(pl.LightningDataModule):
         and shuffles the data at each epoch.
         """
 
-        return DataLoader(self.train_dataset,
-                          batch_size=self.batch_size,
-                          shuffle=True,
-                          num_workers=self.num_workers)
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
 
     def val_dataloader(self):
         """
@@ -145,7 +144,9 @@ class GarbageDataModule(pl.LightningDataModule):
         consistent validation metrics.
         """
 
-        return DataLoader(self.test_dataset,
-                          batch_size=1000,
-                          shuffle=False,
-                          num_workers=self.num_workers)
+        return DataLoader(
+            self.test_dataset,
+            batch_size=1000,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
