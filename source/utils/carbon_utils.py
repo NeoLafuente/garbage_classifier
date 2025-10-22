@@ -164,6 +164,6 @@ def format_total_emissions_display(emissions_csv_path: str) -> str:
     data = get_total_emissions(emissions_csv_path)
     
     return f'''<div style="display: flex; justify-content: space-between; width: 100%;">
-        <span>🌱 <strong>Carbon Footprint Tracker</strong> <em>(use responsibly)</em></span>
+        <span>🌱 <strong>Carbon Footprint Tracker</strong> <em>(use this interactive demo responsibly)</em></span>
         <span>🚗 {data['car_distance_formatted']} | 🌍 {data['total_g']:.2f}g CO₂</span>
     </div>'''
