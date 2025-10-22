@@ -191,6 +191,46 @@ class EdaAnalyzer:
                     result[cls] = np.median(imgs_stack, axis=0) / 255.0
         return result
 
+    def _compute_mean_images_per_batch(self, batch_size=32):
+        """Helper: compute mean image per class using batch processing."""
+        classes = self.df['label'].unique()
+        result = {}
+        
+        for cls in classes:
+            subset = self.df[self.df['label'] == cls]
+            count = 0
+            mean_acc = None
+            
+            for batch_start in range(0, len(subset), batch_size):
+                batch_end = min(batch_start + batch_size, len(subset))
+                batch_rows = subset.iloc[batch_start:batch_end]
+                
+                imgs = []
+                for _, row in batch_rows.iterrows():
+                    img_path = os.path.join(self.dataset_path, "images", row['label'], row['filename'])
+                    try:
+                        img = Image.open(img_path).convert("RGB")
+                        imgs.append(np.array(img, dtype=np.float32))
+                    except:
+                        continue
+                
+                if imgs:
+                    imgs_stack = np.stack(imgs, axis=0)
+                    batch_mean = np.mean(imgs_stack, axis=0)
+                    
+                    # Actualizar media acumulada
+                    if mean_acc is None:
+                        mean_acc = batch_mean
+                    else:
+                        mean_acc = (mean_acc * count + batch_mean * len(imgs)) / (count + len(imgs))
+                    
+                    count += len(imgs)
+            
+            if mean_acc is not None:
+                result[cls] = mean_acc / 255.0
+        
+        return result
+
     def plot_mean_images_per_class(self, filename: Optional[str] = None) -> Figure:
         """Compute or load and plot mean images per class, returning the figure."""
         
@@ -205,7 +245,7 @@ class EdaAnalyzer:
 
         if mean_images is None:
             print("[INFO] Computing mean images...")
-            mean_images = self._compute_stat_images("mean")
+            mean_images = self._compute_mean_images_per_batch()
             if filename:
                 np.save(filename, mean_images)
                 print(f"[INFO] Saved mean images to {filename}")

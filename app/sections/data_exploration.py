@@ -15,7 +15,7 @@ def data_exploration_tab():
     cached_dir = os.path.join(os.getcwd(), "app", "sections", "cached_data")
     os.makedirs(cached_dir, exist_ok=True)
     mean_arrays_path = os.path.join(cached_dir, "mean_prototypes.npy")
-    median_arrays_path = os.path.join(cached_dir, "median_prototypes.npy")
+    # median_arrays_path = os.path.join(cached_dir, "median_prototypes.npy")
 
     # --- Internal functions ---
     def show_random_samples():
@@ -48,27 +48,27 @@ def data_exploration_tab():
         )
         return fig
 
-    def show_median_prototypes():
-        fig = eda.plot_median_images_per_class(filename=median_arrays_path)
-        msg = "✅ Median prototypes plotted. Enable Otsu binarization if you want to adjust."
-        return fig, msg, gr.update(visible=False), gr.update(visible=True)
+    # def show_median_prototypes():
+    #     fig = eda.plot_median_images_per_class(filename=median_arrays_path)
+    #     msg = "✅ Median prototypes plotted. Enable Otsu binarization if you want to adjust."
+    #     return fig, msg, gr.update(visible=False), gr.update(visible=True)
 
-    def toggle_median_otsu_binarization(use_otsu, threshold):
-        """Toggle between normal visualization and Otsu binarization."""
-        if use_otsu:
-            fig = eda.plot_median_images_per_class_with_otsu(
-                threshold=threshold, filename=median_arrays_path
-            )
-        else:
-            fig = eda.plot_median_images_per_class(filename=median_arrays_path)
-        return fig, gr.update(visible=use_otsu, interactive=use_otsu)
+    # def toggle_median_otsu_binarization(use_otsu, threshold):
+    #     """Toggle between normal visualization and Otsu binarization."""
+    #     if use_otsu:
+    #         fig = eda.plot_median_images_per_class_with_otsu(
+    #             threshold=threshold, filename=median_arrays_path
+    #         )
+    #     else:
+    #         fig = eda.plot_median_images_per_class(filename=median_arrays_path)
+    #     return fig, gr.update(visible=use_otsu, interactive=use_otsu)
 
-    def update_median_otsu_threshold(threshold):
-        """Update plot when slider moves (only when Otsu is enabled)."""
-        fig = eda.plot_median_images_per_class_with_otsu(
-            threshold=threshold, filename=median_arrays_path
-        )
-        return fig
+    # def update_median_otsu_threshold(threshold):
+    #     """Update plot when slider moves (only when Otsu is enabled)."""
+    #     fig = eda.plot_median_images_per_class_with_otsu(
+    #         threshold=threshold, filename=median_arrays_path
+    #     )
+    #     return fig
     
     # --- UI Layout ---
     with gr.Row():
@@ -80,8 +80,8 @@ def data_exploration_tab():
     with gr.Row():
         btn_random = gr.Button("🎲 Show Random Samples")
         btn_distribution = gr.Button("📈 Show Class Distribution")
-        btn_mean = gr.Button("🧠 Show Mean Prototypes")
-        btn_median = gr.Button("⚖️ Show Median Prototypes")
+        btn_mean = gr.Button("⚖️ Show Mean Prototypes")
+        # btn_median = gr.Button("⚖️ Show Median Prototypes")
 
     output_plot = gr.Plot(label="Visualization")
     output_text = gr.Textbox(label="Status", interactive=False)
@@ -103,36 +103,36 @@ def data_exploration_tab():
             interactive=False,
         )
 
-    with gr.Row(visible=False) as otsu_median_controls_row:
-        otsu_median_checkbox = gr.Checkbox(
-            label="🔲 Apply Otsu binarization to medians",
-            value=False,
-            interactive=True,
-        )
-        median_threshold_slider = gr.Slider(
-            minimum=-1.0,
-            maximum=1.0,
-            value=0.0,
-            step=0.05,
-            label="🔧 Adjust Otsu Threshold",
-            visible=False,
-            interactive=False,
-        )
+    # with gr.Row(visible=False) as otsu_median_controls_row:
+    #     otsu_median_checkbox = gr.Checkbox(
+    #         label="🔲 Apply Otsu binarization to medians",
+    #         value=False,
+    #         interactive=True,
+    #     )
+    #     median_threshold_slider = gr.Slider(
+    #         minimum=-1.0,
+    #         maximum=1.0,
+    #         value=0.0,
+    #         step=0.05,
+    #         label="🔧 Adjust Otsu Threshold",
+    #         visible=False,
+    #         interactive=False,
+    #     )
 
     # --- Button interactions ---
     btn_random.click(
         fn=show_random_samples,
-        outputs=[output_plot, output_text, otsu_mean_controls_row, otsu_median_controls_row],
+        outputs=[output_plot, output_text, otsu_mean_controls_row]#, otsu_median_controls_row],
     )
     btn_distribution.click(
         fn=show_class_distribution,
-        outputs=[output_plot, output_text, otsu_mean_controls_row, otsu_median_controls_row],
+        outputs=[output_plot, output_text, otsu_mean_controls_row]#, otsu_median_controls_row],
     )
 
     # ============================= MEAN ==================================
     btn_mean.click(
         fn=show_mean_prototypes,
-        outputs=[output_plot, output_text, otsu_mean_controls_row, otsu_median_controls_row],
+        outputs=[output_plot, output_text, otsu_mean_controls_row]#, otsu_median_controls_row],
     )
 
     otsu_mean_checkbox.change(
@@ -148,34 +148,34 @@ def data_exploration_tab():
     )
 
     # ============================= MEDIAN ==================================
-    btn_median.click(
-        fn=show_median_prototypes,
-        outputs=[output_plot, output_text, otsu_mean_controls_row, otsu_median_controls_row],
-    )
+    # btn_median.click(
+    #     fn=show_median_prototypes,
+    #     outputs=[output_plot, output_text, otsu_mean_controls_row, otsu_median_controls_row],
+    # )
 
-    otsu_median_checkbox.change(
-        fn=toggle_median_otsu_binarization,
-        inputs=[otsu_median_checkbox, median_threshold_slider],
-        outputs=[output_plot, median_threshold_slider],
-    )
+    # otsu_median_checkbox.change(
+    #     fn=toggle_median_otsu_binarization,
+    #     inputs=[otsu_median_checkbox, median_threshold_slider],
+    #     outputs=[output_plot, median_threshold_slider],
+    # )
 
-    median_threshold_slider.change(
-        fn=update_median_otsu_threshold,
-        inputs=median_threshold_slider,
-        outputs=output_plot,
-    )
+    # median_threshold_slider.change(
+    #     fn=update_median_otsu_threshold,
+    #     inputs=median_threshold_slider,
+    #     outputs=output_plot,
+    # )
 
     return [
         btn_random,
         btn_distribution,
         btn_mean,
-        btn_median,
+        # btn_median,
         otsu_mean_controls_row,
         otsu_mean_checkbox,
         mean_threshold_slider,
-        otsu_median_controls_row,
-        otsu_median_checkbox,
-        median_threshold_slider,
+        # otsu_median_controls_row,
+        # otsu_median_checkbox,
+        # median_threshold_slider,
         output_plot,
         output_text,
     ]
