@@ -38,12 +38,12 @@ from pathlib import Path
 def get_emissions_path():
     """
     Get the path to the emissions CSV file.
-    
+
     Returns
     -------
     pathlib.Path
         Path object pointing to the emissions.csv file in the model directory.
-    
+
     Notes
     -----
     The emissions file is located in the same directory as the trained model
@@ -55,13 +55,13 @@ def get_emissions_path():
 def update_carbon_display():
     """
     Update the carbon footprint display with latest emissions data.
-    
+
     Returns
     -------
     str
         HTML-formatted string containing the total carbon emissions statistics,
         including CO₂ equivalent mass and car distance equivalent.
-    
+
     Notes
     -----
     This function reads the emissions CSV file and formats the cumulative
@@ -73,25 +73,25 @@ def update_carbon_display():
 def main():
     """
     Launch the main Gradio application interface.
-    
+
     Creates and configures a multi-tab Gradio interface with data exploration,
     model training, and evaluation capabilities. Includes a persistent carbon
     footprint counter in the header and custom CSS styling.
-    
+
     The interface includes:
     - Header with project title and carbon counter
     - Tab 1: Data Exploration (dataset visualization and analysis)
     - Tab 2: Training Interface (model training with custom parameters)
     - Tab 3: Model Evaluation (metrics visualization and inference)
-    
+
     Notes
     -----
     The application launches with `share=True`, which creates a public URL
     for remote access. Set to `False` for local-only access.
-    
+
     Custom CSS is injected to style the carbon counter with a gradient
     background and appropriate sizing.
-    
+
     See Also
     --------
     data_exploration_tab : Data exploration UI section
@@ -103,21 +103,20 @@ def main():
         with gr.Row():
             gr.Markdown("# 🗑️♻️ Garbage Classifier Interactive Demo")
             carbon_display = gr.HTML(
-                value=update_carbon_display(),
-                elem_id="carbon-counter"
+                value=update_carbon_display(), elem_id="carbon-counter"
             )
-        
+
         # Tabs
         with gr.Tabs():
             with gr.Tab("Data Exploration"):
                 data_exploration_tab()
-            
+
             with gr.Tab("Training Interface"):
                 train_outputs = model_training_tab(carbon_display)
-            
+
             with gr.Tab("Model Evaluation"):
                 eval_outputs = model_evaluation_tab(carbon_display)
-        
+
         # Add custom CSS for the carbon counter
         demo.load(
             fn=None,
@@ -142,7 +141,7 @@ def main():
                 `;
                 document.head.appendChild(style);
             }
-            """
+            """,
         )
 
     demo.launch(share=True)
