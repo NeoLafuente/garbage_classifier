@@ -52,3 +52,5 @@ models/weights/
 models/performance/loss_curves/metrics.json
 
 *.orig
+
+models/best/performance/loss_curves/metrics.json
