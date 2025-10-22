@@ -1,4 +1,29 @@
-# app/sections/model_evaluation.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Model Evaluation and Inference Interface for Gradio Application.
+
+This module provides comprehensive model evaluation tools and inference
+capabilities through a Gradio interface. It includes visualization of
+model performance metrics, confusion matrices, calibration curves, and
+both single-image and batch prediction functionality.
+
+Key features include:
+- Multi-model support (best model and latest trained model)
+- Cached computation of expensive metrics (confusion matrices, calibration)
+- Automatic cache invalidation based on model modification time
+- Real-time inference with carbon emissions tracking
+- Training metrics visualization (loss/accuracy curves)
+
+Notes
+-----
+Cache files are stored in `app/sections/cached_data/` and are automatically
+invalidated when the corresponding model file is updated. This ensures
+that evaluation metrics reflect the current model state while avoiding
+redundant computation.
+"""
+__docformat__ = "numpy"
+
 import gradio as gr
 from source.utils.carbon_utils import format_total_emissions_display
 from source.utils import config as cfg
@@ -13,12 +38,41 @@ import pickle
 
 
 def get_emissions_path():
-    """Get the path to the emissions CSV file"""
+    """
+    Get the path to the emissions CSV file.
+    
+    Returns
+    -------
+    pathlib.Path
+        Path object pointing to the emissions.csv file in the model directory.
+    
+    Notes
+    -----
+    The emissions file is stored in the same directory as the trained model
+    checkpoint, as defined in the global configuration.
+    """
     return Path(cfg.MODEL_PATH).parent / "emissions.csv"
 
 
 def get_available_models():
-    """Get list of available trained models"""
+    """
+    Get dictionary of available trained models.
+    
+    Returns
+    -------
+    dict of {str: str}
+        Dictionary mapping model display names to their checkpoint file paths.
+        Includes both the best provided model and the latest trained model.
+    
+    Examples
+    --------
+    >>> models = get_available_models()
+    >>> models
+    {
+        'Best Model (Provided)': 'models/best/model_resnet18_garbage.ckpt',
+        'Latest Trained Model': 'models/resnet18_garbage.ckpt'
+    }
+    """
     models_dict = {
         "Best Model (Provided)": str(Path("models/best/model_resnet18_garbage.ckpt")),
         "Latest Trained Model": str(cfg.MODEL_PATH)
@@ -30,8 +84,38 @@ def get_available_models():
 CACHE_DIR = Path("app/sections/cached_data")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+
 def is_cache_valid(cache_file, model_path):
-    """Check if cache is newer than the model file"""
+    """
+    Check if cached file is newer than the model checkpoint.
+    
+    Validates cache by comparing modification timestamps. Cache is considered
+    valid only if it was created/modified after the model checkpoint.
+    
+    Parameters
+    ----------
+    cache_file : pathlib.Path
+        Path to the cached file to validate.
+    model_path : str or pathlib.Path
+        Path to the model checkpoint file.
+    
+    Returns
+    -------
+    bool
+        True if cache exists and is newer than the model, False otherwise.
+    
+    Notes
+    -----
+    This function implements automatic cache invalidation to ensure that
+    evaluation metrics are regenerated when a model is retrained.
+    
+    Examples
+    --------
+    >>> cache_file = Path("cached_data/cm_raw_Latest.pkl")
+    >>> model_path = "models/resnet18_garbage.ckpt"
+    >>> is_cache_valid(cache_file, model_path)
+    False  # Cache doesn't exist or is older than model
+    """
     if not cache_file.exists():
         return False
     
@@ -46,6 +130,7 @@ def is_cache_valid(cache_file, model_path):
 
     return cache_time > model_time  # Cache is valid if newer than model
 
+
 # State to hold both confusion matrices
 confusion_matrices_state = {
     "raw": None,
@@ -59,7 +144,48 @@ confusion_matrices_state = {
 # ========================
 
 def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progress()):
-    """Generate BOTH confusion matrices (raw + normalized) and cache them"""
+    """
+    Generate and cache both raw and normalized confusion matrices.
+    
+    This function generates confusion matrices for the validation set,
+    caching both raw and normalized versions to enable instant toggling
+    without recomputation. Implements three-tier caching: memory, disk,
+    and automatic invalidation.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    show_normalized : bool
+        Whether to display the normalized version initially.
+    progress : gr.Progress, optional
+        Gradio progress tracker for UI updates.
+    
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure or None, str, gr.update)
+        - Figure: The confusion matrix plot (raw or normalized)
+        - str: Status message describing the operation result
+        - gr.update: Gradio update object to control checkbox visibility
+    
+    Notes
+    -----
+    Caching strategy:
+    1. Check memory cache (fastest)
+    2. Check disk cache with validation (fast)
+    3. Regenerate if cache invalid or missing (slow)
+    
+    Both raw and normalized matrices are always generated together and
+    stored separately to enable instant toggling via the checkbox.
+    
+    The cache is automatically invalidated when the model file is modified,
+    ensuring metrics reflect the current model state.
+    
+    See Also
+    --------
+    toggle_confusion_matrix : Switch between raw/normalized without regenerating
+    is_cache_valid : Cache validation logic
+    """
     global confusion_matrices_state
     
     if not model_choice:
@@ -159,7 +285,34 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
 
 
 def toggle_confusion_matrix(show_normalized):
-    """Toggle between raw and normalized confusion matrix WITHOUT regenerating"""
+    """
+    Toggle between raw and normalized confusion matrices instantly.
+    
+    Switches the displayed confusion matrix without regenerating, using
+    cached versions from memory. This enables instant UI response to the
+    normalization checkbox.
+    
+    Parameters
+    ----------
+    show_normalized : bool
+        If True, return normalized matrix; if False, return raw matrix.
+    
+    Returns
+    -------
+    matplotlib.figure.Figure or None
+        The requested confusion matrix figure, or None if not available
+        in memory cache.
+    
+    Notes
+    -----
+    This function only accesses the in-memory cache. If matrices are not
+    yet generated, it returns None. The generate_confusion_matrix function
+    should be called first to populate the cache.
+    
+    See Also
+    --------
+    generate_confusion_matrix : Generate and cache both matrix versions
+    """
     global confusion_matrices_state
     
     if show_normalized:
@@ -173,7 +326,40 @@ def toggle_confusion_matrix(show_normalized):
 
 
 def generate_calibration_curves(model_choice, progress=gr.Progress()):
-    """Generate calibration curves and cache them"""
+    """
+    Generate and cache calibration curves for the selected model.
+    
+    Calibration curves show how well predicted probabilities match actual
+    outcomes. This function generates curves for all classes and caches
+    the result for faster subsequent access.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    progress : gr.Progress, optional
+        Gradio progress tracker for UI updates.
+    
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure or None, str)
+        - Figure: The calibration curves plot
+        - str: Status message describing the operation result
+    
+    Notes
+    -----
+    The calibration plot is generated using GarbageModelAnalyzer's
+    plot_calibration_curves method and cached to disk. Cache is
+    automatically invalidated when the model is retrained.
+    
+    Well-calibrated models should have curves close to the diagonal,
+    indicating that predicted probabilities match actual frequencies.
+    
+    See Also
+    --------
+    is_cache_valid : Cache validation logic
+    GarbageModelAnalyzer.plot_calibration_curves : Core plotting function
+    """
     if not model_choice:
         return None, "Please select a model first"
     
@@ -224,7 +410,27 @@ def generate_calibration_curves(model_choice, progress=gr.Progress()):
 
 
 def get_metrics_path_for_model(model_choice):
-    """Get the correct metrics.json path for the selected model"""
+    """
+    Get the correct metrics.json path for the selected model.
+    
+    Different models store their training metrics in different locations.
+    This function maps model choices to their corresponding metrics files.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    
+    Returns
+    -------
+    pathlib.Path
+        Path to the metrics.json file for the selected model.
+    
+    Notes
+    -----
+    The best provided model has metrics in a fixed location, while the
+    latest trained model uses the configured loss curves path.
+    """
     if model_choice == "Best Model (Provided)":
         return Path("models/best/performance/loss_curves/metrics.json")
     else:
@@ -232,8 +438,36 @@ def get_metrics_path_for_model(model_choice):
 
 
 def load_loss_curves(model_choice):
-    """Load and plot loss curves from metrics.json"""
-    # ... (sin cambios)
+    """
+    Load and plot training/validation loss curves from metrics.json.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure or None, str)
+        - Figure: Loss curves plot showing train and validation loss
+        - str: Status message describing the operation result
+    
+    Notes
+    -----
+    Loss curves show how training and validation loss evolved during
+    training. Diverging curves may indicate overfitting, while parallel
+    curves suggest good generalization.
+    
+    The plot includes:
+    - Blue line with circles: Training loss
+    - Red line with squares: Validation loss
+    - Grid for easier reading
+    
+    See Also
+    --------
+    load_accuracy_curves : Load accuracy metrics instead of loss
+    get_metrics_path_for_model : Determine metrics file location
+    """
     try:
         metrics_path = get_metrics_path_for_model(model_choice)
         
@@ -271,7 +505,36 @@ def load_loss_curves(model_choice):
 
 
 def load_accuracy_curves(model_choice):
-    """Load and plot accuracy curves from metrics.json"""
+    """
+    Load and plot training/validation accuracy curves from metrics.json.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure or None, str)
+        - Figure: Accuracy curves plot showing train and validation accuracy
+        - str: Status message describing the operation result
+    
+    Notes
+    -----
+    Accuracy curves show how classification accuracy evolved during training.
+    The plot includes:
+    - Blue line with circles: Training accuracy
+    - Red line with squares: Validation accuracy
+    - Y-axis limited to [0, 1] for consistency
+    - Grid for easier reading
+    
+    A large gap between train and validation accuracy indicates overfitting.
+    
+    See Also
+    --------
+    load_loss_curves : Load loss metrics instead of accuracy
+    get_metrics_path_for_model : Determine metrics file location
+    """
     try:
         metrics_path = get_metrics_path_for_model(model_choice)
         
@@ -313,7 +576,45 @@ def load_accuracy_curves(model_choice):
 # ========================
 
 def predict_single_image_gradio(model_choice, image, carbon_display_text, track_carbon=True):
-    """Gradio wrapper for single image prediction"""
+    """
+    Gradio wrapper for single image prediction with visualization.
+    
+    Performs inference on a single image and generates a horizontal bar
+    chart of class probabilities, highlighting the predicted class.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    image : np.ndarray
+        Input image as numpy array (from gr.Image component).
+    carbon_display_text : str
+        Current HTML string for the carbon display (to be updated).
+    track_carbon : bool, optional
+        Whether to track carbon emissions for this prediction, by default True.
+    
+    Returns
+    -------
+    tuple of (matplotlib.figure.Figure or None, str, str)
+        - Figure: Bar chart of class probabilities
+        - str: Markdown-formatted prediction results and statistics
+        - str: Updated HTML for carbon display
+    
+    Notes
+    -----
+    The probability bar chart uses:
+    - Green bar for the predicted class
+    - Sky blue bars for other classes
+    - Percentage labels on each bar
+    
+    If carbon tracking is enabled, emissions are added to the cumulative
+    total and the carbon display is updated.
+    
+    See Also
+    --------
+    predict_batch : Batch prediction on multiple images
+    source.predict.predict_image : Core prediction function
+    """
     if image is None:
         return None, "Please upload an image", carbon_display_text
     
@@ -371,7 +672,54 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
 
 
 def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon=True):
-    """Gradio wrapper for batch prediction"""
+    """
+    Gradio wrapper for batch prediction on multiple images.
+    
+    Performs inference on multiple images simultaneously and returns
+    results in a tabular format with per-image predictions and overall
+    statistics.
+    
+    Parameters
+    ----------
+    model_choice : str
+        Name of the selected model (from get_available_models()).
+    files : list of gr.File
+        List of uploaded file objects from Gradio file input.
+    carbon_display_text : str
+        Current HTML string for the carbon display (to be updated).
+    track_carbon : bool, optional
+        Whether to track carbon emissions for this batch, by default True.
+    
+    Returns
+    -------
+    tuple of (pd.DataFrame or None, str, str)
+        - DataFrame: Table with filename, predicted class, and confidence
+          for each image
+        - str: Markdown-formatted summary statistics and carbon footprint
+        - str: Updated HTML for carbon display
+    
+    Notes
+    -----
+    The results table includes:
+    - Filename: Original image filename
+    - Predicted Class: Predicted garbage category
+    - Confidence (%): Prediction confidence as percentage
+    
+    Summary statistics include:
+    - Total images processed
+    - Number of successful predictions
+    - Total carbon emissions (if tracked)
+    - Average emissions per image
+    - Car distance equivalent
+    
+    Failed predictions are marked as "Error" in the table with the
+    error message in the confidence column.
+    
+    See Also
+    --------
+    predict_single_image_gradio : Single image prediction
+    source.predict.predict_batch : Core batch prediction function
+    """
     if not files or len(files) == 0:
         return None, "Please upload images", carbon_display_text
     
@@ -435,7 +783,53 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
 # ========================
 
 def model_evaluation_tab(carbon_display):
-    """Create the Model Evaluation UI"""
+    """
+    Create the Model Evaluation and Inference UI section.
+    
+    Builds a comprehensive Gradio interface for model evaluation, metrics
+    visualization, and real-time inference. Organized into three main areas:
+    model selection, metrics visualization, and image prediction.
+    
+    Parameters
+    ----------
+    carbon_display : gr.HTML
+        The carbon counter display component to update after inference
+        operations. Shows cumulative emissions across all tracked operations.
+    
+    Returns
+    -------
+    list
+        Empty list (kept for API consistency).
+    
+    Notes
+    -----
+    The interface is organized into sections:
+    
+    1. **Model Selection:**
+       - Radio buttons to choose between best model and latest trained model
+    
+    2. **Metrics Visualization Tabs:**
+       - Confusion Matrix: Raw and normalized versions with instant toggle
+       - Loss Curves: Training and validation loss over epochs
+       - Accuracy Curves: Training and validation accuracy over epochs
+       - Calibration Curves: Per-class calibration analysis
+    
+    3. **Inference Tabs:**
+       - Single Image: Upload and classify individual images
+       - Batch Prediction: Process multiple images simultaneously
+    
+    All expensive computations (confusion matrices, calibration curves) are
+    cached and automatically invalidated when models are retrained.
+    
+    Carbon emissions can be optionally tracked for all inference operations
+    and are displayed in both absolute terms and car distance equivalents.
+    
+    Examples
+    --------
+    >>> with gr.Blocks() as demo:
+    ...     carbon_display = gr.HTML()
+    ...     model_evaluation_tab(carbon_display)
+    """
     with gr.Column():
         gr.Markdown("### 🔬 Model Evaluation & Inference")
         gr.Markdown(
