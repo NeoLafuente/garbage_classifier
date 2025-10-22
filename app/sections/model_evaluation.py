@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 import pandas as pd
+import pickle
 
 
 def get_emissions_path():
@@ -25,14 +26,154 @@ def get_available_models():
     return models_dict
 
 
+# Setup cache directory
+CACHE_DIR = Path("app/sections/cached_data")
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# State to hold both confusion matrices
+confusion_matrices_state = {
+    "raw": None,
+    "normalized": None,
+    "model_choice": None  # Track which model generated these
+}
+
+
 # ========================
-# METRICS FUNCTIONS (keep these - they're UI-specific)
+# METRICS FUNCTIONS
 # ========================
 
 def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progress()):
-    """Generate confusion matrix plot"""
+    """Generate BOTH confusion matrices (raw + normalized) and cache them"""
+    global confusion_matrices_state
+    
+    if not model_choice:
+        return None, "Please select a model first", gr.update(visible=False)
+    
+    # Check if we already have matrices for this model
+    if (confusion_matrices_state["model_choice"] == model_choice and 
+        confusion_matrices_state["raw"] is not None and 
+        confusion_matrices_state["normalized"] is not None):
+        
+        # Return the appropriate one based on checkbox
+        selected_matrix = confusion_matrices_state["normalized"] if show_normalized else confusion_matrices_state["raw"]
+        matrix_type = "Normalized" if show_normalized else "Raw"
+        return selected_matrix, f"✅ {matrix_type} confusion matrix (from cache)", gr.update(visible=True, interactive=True)
+    
+    # Check disk cache
+    cache_file_raw = CACHE_DIR / f"cm_raw_{model_choice.replace(' ', '_')}.pkl"
+    cache_file_norm = CACHE_DIR / f"cm_norm_{model_choice.replace(' ', '_')}.pkl"
+    
+    if cache_file_raw.exists() and cache_file_norm.exists():
+        try:
+            progress(0.2, desc="Loading from cache...")
+            with open(cache_file_raw, 'rb') as f:
+                fig_raw = pickle.load(f)
+            with open(cache_file_norm, 'rb') as f:
+                fig_norm = pickle.load(f)
+            
+            confusion_matrices_state["raw"] = fig_raw
+            confusion_matrices_state["normalized"] = fig_norm
+            confusion_matrices_state["model_choice"] = model_choice
+            
+            selected_matrix = fig_norm if show_normalized else fig_raw
+            matrix_type = "Normalized" if show_normalized else "Raw"
+            progress(1.0, desc="Done!")
+            return selected_matrix, f"✅ {matrix_type} confusion matrix loaded from cache", gr.update(visible=True, interactive=True)
+        except Exception as e:
+            print(f"[WARN] Failed to load cache: {e}")
+    
+    # Generate new matrices
+    try:
+        progress(0.1, desc="Loading model...")
+        analyzer = GarbageModelAnalyzer()
+        
+        models_dict = get_available_models()
+        model_path = models_dict.get(model_choice)
+        
+        analyzer.load_model(checkpoint_path=model_path)
+        
+        progress(0.3, desc="Setting up data...")
+        analyzer.setup_data(batch_size=32)
+        
+        progress(0.5, desc="Evaluating model...")
+        val_loader = analyzer.data_module.val_dataloader()
+        preds, labels, probs = analyzer.evaluate_loader(val_loader)
+        
+        progress(0.7, desc="Generating confusion matrices...")
+        
+        from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+        num_classes = cfg.NUM_CLASSES
+        cm_raw = confusion_matrix(labels.cpu().numpy(), preds.cpu().numpy(), labels=range(num_classes))
+        cm_norm = cm_raw.astype('float') / cm_raw.sum(axis=1)[:, np.newaxis]
+        
+        # Generate RAW matrix figure
+        fig_raw, ax_raw = plt.subplots(figsize=(10, 8))
+        disp_raw = ConfusionMatrixDisplay(confusion_matrix=cm_raw, display_labels=cfg.CLASS_NAMES)
+        disp_raw.plot(cmap=plt.cm.Blues, ax=ax_raw)
+        ax_raw.set_title("Confusion Matrix - Validation Set")
+        plt.tight_layout()
+        
+        # Generate NORMALIZED matrix figure
+        fig_norm, ax_norm = plt.subplots(figsize=(10, 8))
+        disp_norm = ConfusionMatrixDisplay(confusion_matrix=cm_norm, display_labels=cfg.CLASS_NAMES)
+        disp_norm.plot(cmap=plt.cm.Blues, ax=ax_norm)
+        ax_norm.set_title("Normalized Confusion Matrix - Validation Set")
+        plt.tight_layout()
+        
+        # Save to cache
+        progress(0.9, desc="Saving to cache...")
+        with open(cache_file_raw, 'wb') as f:
+            pickle.dump(fig_raw, f)
+        with open(cache_file_norm, 'wb') as f:
+            pickle.dump(fig_norm, f)
+        
+        # Update state
+        confusion_matrices_state["raw"] = fig_raw
+        confusion_matrices_state["normalized"] = fig_norm
+        confusion_matrices_state["model_choice"] = model_choice
+        
+        selected_matrix = fig_norm if show_normalized else fig_raw
+        matrix_type = "Normalized" if show_normalized else "Raw"
+        
+        progress(1.0, desc="Done!")
+        return selected_matrix, f"✅ {matrix_type} confusion matrix generated and cached", gr.update(visible=True, interactive=True)
+        
+    except Exception as e:
+        return None, f"❌ Error: {str(e)}", gr.update(visible=False)
+
+
+def toggle_confusion_matrix(show_normalized):
+    """Toggle between raw and normalized confusion matrix WITHOUT regenerating"""
+    global confusion_matrices_state
+    
+    if show_normalized:
+        if confusion_matrices_state["normalized"] is not None:
+            return confusion_matrices_state["normalized"]
+    else:
+        if confusion_matrices_state["raw"] is not None:
+            return confusion_matrices_state["raw"]
+    
+    return None
+
+
+def generate_calibration_curves(model_choice, progress=gr.Progress()):
+    """Generate calibration curves and cache them"""
     if not model_choice:
         return None, "Please select a model first"
+    
+    # Check disk cache
+    cache_file = CACHE_DIR / f"calib_{model_choice.replace(' ', '_')}.pkl"
+    
+    if cache_file.exists():
+        try:
+            progress(0.2, desc="Loading from cache...")
+            with open(cache_file, 'rb') as f:
+                fig = pickle.load(f)
+            progress(1.0, desc="Done!")
+            return fig, "✅ Calibration curves loaded from cache"
+        except Exception as e:
+            print(f"[WARN] Failed to load cache: {e}")
     
     try:
         progress(0.1, desc="Loading model...")
@@ -50,45 +191,34 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
         val_loader = analyzer.data_module.val_dataloader()
         preds, labels, probs = analyzer.evaluate_loader(val_loader)
         
-        progress(0.8, desc="Generating confusion matrix...")
+        progress(0.8, desc="Generating calibration curves...")
         
-        from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-        num_classes = cfg.NUM_CLASSES
-        cm = confusion_matrix(labels.cpu().numpy(), preds.cpu().numpy(), labels=range(num_classes))
+        analyzer.plot_calibration_curves(labels, probs)
+        fig = plt.gcf()
         
-        if show_normalized:
-            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-            title = "Normalized Confusion Matrix - Validation Set"
-        else:
-            title = "Confusion Matrix - Validation Set"
-        
-        fig, ax = plt.subplots(figsize=(10, 8))
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cfg.CLASS_NAMES)
-        disp.plot(cmap=plt.cm.Blues, ax=ax)
-        ax.set_title(title)
-        plt.tight_layout()
+        # Save to cache
+        progress(0.9, desc="Saving to cache...")
+        with open(cache_file, 'wb') as f:
+            pickle.dump(fig, f)
         
         progress(1.0, desc="Done!")
-        return fig, "✅ Confusion matrix generated successfully"
+        return fig, "✅ Calibration curves generated and cached"
         
     except Exception as e:
         return None, f"❌ Error: {str(e)}"
 
 
-# app/sections/model_evaluation.py
-
 def get_metrics_path_for_model(model_choice):
     """Get the correct metrics.json path for the selected model"""
     if model_choice == "Best Model (Provided)":
-        # Buscar en la carpeta del mejor modelo
         return Path("models/best/performance/loss_curves/metrics.json")
     else:
-        # Buscar en la carpeta del último modelo entrenado
         return Path(cfg.LOSS_CURVES_PATH) / "metrics.json"
 
 
 def load_loss_curves(model_choice):
     """Load and plot loss curves from metrics.json"""
+    # ... (sin cambios)
     try:
         metrics_path = get_metrics_path_for_model(model_choice)
         
@@ -163,41 +293,8 @@ def load_accuracy_curves(model_choice):
         return None, f"❌ Error loading accuracy curves: {str(e)}"
 
 
-def generate_calibration_curves(model_choice, progress=gr.Progress()):
-    """Generate calibration curves"""
-    if not model_choice:
-        return None, "Please select a model first"
-    
-    try:
-        progress(0.1, desc="Loading model...")
-        analyzer = GarbageModelAnalyzer()
-        
-        models_dict = get_available_models()
-        model_path = models_dict.get(model_choice)
-        
-        analyzer.load_model(checkpoint_path=model_path)
-        
-        progress(0.3, desc="Setting up data...")
-        analyzer.setup_data(batch_size=32)
-        
-        progress(0.5, desc="Evaluating model...")
-        val_loader = analyzer.data_module.val_dataloader()
-        preds, labels, probs = analyzer.evaluate_loader(val_loader)
-        
-        progress(0.8, desc="Generating calibration curves...")
-        
-        analyzer.plot_calibration_curves(labels, probs)
-        fig = plt.gcf()
-        
-        progress(1.0, desc="Done!")
-        return fig, "✅ Calibration curves generated successfully"
-        
-    except Exception as e:
-        return None, f"❌ Error: {str(e)}"
-
-
 # ========================
-# PREDICTION FUNCTIONS (use source/predict.py)
+# PREDICTION FUNCTIONS
 # ========================
 
 def predict_single_image_gradio(model_choice, image, carbon_display_text, track_carbon=True):
@@ -209,14 +306,10 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
         return None, "Please select a model first", carbon_display_text
     
     try:
-        # Get model path
         models_dict = get_available_models()
         model_path = models_dict.get(model_choice)
-        
-        # Load model once
         model, device, transform = load_model_for_inference(model_path=model_path)
         
-        # Predict
         result = predict_image(
             image,
             model=model,
@@ -225,7 +318,6 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
             track_carbon=track_carbon
         )
         
-        # Create probabilities bar chart
         fig, ax = plt.subplots(figsize=(10, 6))
         probs_list = [result['probabilities'][cls] for cls in cfg.CLASS_NAMES]
         pred_idx = result['predicted_idx']
@@ -242,7 +334,6 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
         
         plt.tight_layout()
         
-        # Format result text
         result_text = f"### 🎯 Prediction: **{result['predicted_class']}**\n\n"
         result_text += f"**Confidence:** {result['confidence']*100:.2f}%\n\n"
         result_text += "**All Probabilities:**\n"
@@ -250,7 +341,6 @@ def predict_single_image_gradio(model_choice, image, carbon_display_text, track_
             emoji = "🏆" if class_name == result['predicted_class'] else "  "
             result_text += f"{emoji} {class_name}: {prob*100:.2f}%\n"
         
-        # Add emissions if tracked
         updated_carbon_display = carbon_display_text
         if result['emissions']:
             emissions = result['emissions']
@@ -274,17 +364,12 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         return None, "Please select a model first", carbon_display_text
     
     try:
-        # Get model path
         models_dict = get_available_models()
         model_path = models_dict.get(model_choice)
-        
-        # Load model once
         model, device, transform = load_model_for_inference(model_path=model_path)
         
-        # Extract file paths
         image_paths = [file.name for file in files]
         
-        # USE IMPORTED FUNCTION
         batch_result = predict_batch(
             image_paths,
             model=model,
@@ -293,7 +378,6 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
             track_carbon=track_carbon
         )
         
-        # Format results as DataFrame
         df_data = []
         for result in batch_result['results']:
             if result['status'] == 'success':
@@ -311,13 +395,11 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         
         df_results = pd.DataFrame(df_data)
         
-        # Format result text
         summary = batch_result['summary']
         result_text = f"### 📊 Batch Prediction Results\n\n"
         result_text += f"**Total images processed:** {summary['total_images']}\n"
         result_text += f"**Successful predictions:** {summary['successful']}\n\n"
         
-        # Add emissions if tracked
         updated_carbon_display = carbon_display_text
         if batch_result['emissions']:
             emissions = batch_result['emissions']
@@ -330,23 +412,21 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         return df_results, result_text, updated_carbon_display
         
     except Exception as e:
-        return None, f"❌ Error: {str(e)}", carbon_display_text  # ✅
+        return None, f"❌ Error: {str(e)}", carbon_display_text
 
 
 # ========================
-# UI LAYOUT (keep as is)
+# UI LAYOUT
 # ========================
 
 def model_evaluation_tab(carbon_display):
     """Create the Model Evaluation UI"""
-    # [Keep your existing UI code, just replace the function calls]
     with gr.Column():
         gr.Markdown("### 🔬 Model Evaluation & Inference")
         gr.Markdown(
             "Evaluate trained models, visualize metrics, and make predictions on new images."
         )
         
-        # Model Selection
         gr.Markdown("#### 🧠 Model Selection")
         model_choice = gr.Radio(
             choices=list(get_available_models().keys()),
@@ -357,7 +437,6 @@ def model_evaluation_tab(carbon_display):
         
         gr.Markdown("---")
         
-        # Metrics Section
         gr.Markdown("#### 📈 Model Metrics & Visualizations")
         
         with gr.Tabs():
@@ -365,7 +444,8 @@ def model_evaluation_tab(carbon_display):
                 show_normalized = gr.Checkbox(
                     label="Show Normalized",
                     value=False,
-                    info="Toggle between raw counts and normalized percentages"
+                    info="Toggle between raw counts and normalized percentages",
+                    visible=False
                 )
                 cm_button = gr.Button("Generate Confusion Matrix", variant="primary")
                 cm_plot = gr.Plot(label="Confusion Matrix")
@@ -374,7 +454,13 @@ def model_evaluation_tab(carbon_display):
                 cm_button.click(
                     fn=generate_confusion_matrix,
                     inputs=[model_choice, show_normalized],
-                    outputs=[cm_plot, cm_status]
+                    outputs=[cm_plot, cm_status, show_normalized]
+                )
+                
+                show_normalized.change(
+                    fn=toggle_confusion_matrix,
+                    inputs=[show_normalized],
+                    outputs=[cm_plot]
                 )
             
             with gr.Tab("Loss Curves"):
@@ -412,7 +498,6 @@ def model_evaluation_tab(carbon_display):
         
         gr.Markdown("---")
         
-        # Inference Section
         gr.Markdown("#### 🔍 Image Prediction")
         
         with gr.Tabs():
@@ -437,7 +522,6 @@ def model_evaluation_tab(carbon_display):
                             label="Class Probabilities"
                         )
                 
-                # Resultado textual debajo
                 single_result_text = gr.Markdown("Upload an image and click 'Predict'")
                 
                 single_predict_button.click(
