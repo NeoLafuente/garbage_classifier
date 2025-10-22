@@ -51,3 +51,25 @@ dev = [
     "pdoc>=15.0.4",
     "twine>=6.2.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["source*", "app*"]
+exclude = [
+    "data*",
+    "models*",
+    "reports*",
+    "notebooks*",
+    "scripts*",
+    "docs*",
+    "*.egg-info",
+]
+
+[project.scripts]
+garbage-train = "source.train:main"
+garbage-predict = "source.predict:main"
+garbage-app = "app.main:main"

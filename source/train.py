@@ -237,7 +237,7 @@ def train_model(
 # ========================
 # CLI Entry Point
 # ========================
-if __name__ == "__main__":
+def main():
     """
     Main entry point for the training script when run from command line.
 
@@ -254,19 +254,24 @@ if __name__ == "__main__":
     """
     print("Starting training with default configuration...")
     result = train_model()
+    
     if result["emissions"]:
         print(
-            f"\n🌍 Total carbon footprint: \
-                {result['emissions']['emissions_g']:.2f}g \
-                    CO₂eq"
+            f"\n🌍 Total carbon footprint: "
+            f"{result['emissions']['emissions_g']:.2f}g CO₂eq"
         )
         print(
-            f"🚗 Equivalent to driving: \
-                {result['emissions']['car_distance_formatted']}"
+            f"🚗 Equivalent to driving: "
+            f"{result['emissions']['car_distance_formatted']}"
         )
+    
     if result["metrics"]:
         print("\n📊 Final Metrics:")
         if result["metrics"].get("train_acc") is not None:
             print(f"  Train Accuracy: {result['metrics']['train_acc']:.4f}")
         if result["metrics"].get("val_acc") is not None:
             print(f"  Validation Accuracy: {result['metrics']['val_acc']:.4f}")
+
+
+if __name__ == "__main__":
+    main()

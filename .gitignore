@@ -56,3 +56,5 @@ models/performance/loss_curves/metrics.json
 models/best/performance/loss_curves/metrics.json
 
 app/sections/cached_data/
+
+garbage_classifier.egg-info/
