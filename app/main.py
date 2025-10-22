@@ -51,7 +51,6 @@ def get_emissions_path():
     """
     return Path(cfg.MODEL_PATH).parent / "emissions.csv"
 
-
 def update_carbon_display():
     """
     Update the carbon footprint display with latest emissions data.
@@ -68,7 +67,6 @@ def update_carbon_display():
     carbon footprint for display in the Gradio interface header.
     """
     return format_total_emissions_display(get_emissions_path())
-
 
 def main():
     """
