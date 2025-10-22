@@ -15,6 +15,10 @@ The script generates comprehensive documentation for:
 - Gradio application and UI sections
 - Carbon emissions tracking utilities
 
+If a README.md file exists in the project root, pdoc will automatically
+use it to generate a customized index.html landing page with project
+overview and quick start information.
+
 Usage
 -----
 Run from the project root directory:
@@ -33,6 +37,10 @@ Requires pdoc to be installed:
 
 or with uv:
     $ uv pip install pdoc
+
+For best results, create a README.md file in the project root with
+project overview, quick start guide, and feature highlights. pdoc
+will automatically convert it to the documentation homepage.
 """
 __docformat__ = "numpy"
 
@@ -46,6 +54,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 SOURCE_DIR = PROJECT_ROOT / "source"
 APP_DIR = PROJECT_ROOT / "app"
 OUTPUT_DIR = PROJECT_ROOT / "docs"
+README_PATH = PROJECT_ROOT / "README.md"
 
 # Files to document (organized by category)
 FILES_TO_DOCUMENT = [
@@ -105,6 +114,24 @@ def check_pdoc_installed():
         return False
 
 
+def check_readme_exists():
+    """
+    Check if README.md exists in the project root.
+    
+    Returns
+    -------
+    bool
+        True if README.md exists, False otherwise.
+    
+    Notes
+    -----
+    If README.md exists, pdoc will automatically use it to generate
+    a customized index.html homepage with project overview and
+    quick start information.
+    """
+    return README_PATH.exists()
+
+
 def generate_documentation():
     """
     Generate HTML documentation using pdoc for all project modules.
@@ -114,14 +141,16 @@ def generate_documentation():
     - Source code inclusion for reference
     - Automatic cross-linking between modules
     - Hierarchical organization by package structure
+    - Custom homepage from README.md (if present)
     
     The function performs these steps:
     1. Verifies pdoc installation
     2. Creates output directory
     3. Validates all source files exist
-    4. Configures PYTHONPATH for proper imports
-    5. Executes pdoc with appropriate flags
-    6. Reports generation results
+    4. Checks for README.md (optional but recommended)
+    5. Configures PYTHONPATH for proper imports
+    6. Executes pdoc with appropriate flags
+    7. Reports generation results
     
     Returns
     -------
@@ -139,12 +168,14 @@ def generate_documentation():
     - Docstring style: NumPy
     - Includes source code in documentation
     - Generates index.html for easy navigation
+    - Automatically converts README.md to homepage (if present)
     
     **File Organization:**
     The generated documentation mirrors the source structure:
     - source/ modules → docs/source/
     - app/ modules → docs/app/
     - Index page links to all modules
+    - README.md → index.html (if README exists)
     
     **Error Handling:**
     Returns False and prints detailed error messages if:
@@ -170,6 +201,14 @@ def generate_documentation():
         return False
     
     print("\n✓ pdoc found")
+    
+    # Check for README.md
+    has_readme = check_readme_exists()
+    if has_readme:
+        print(f"✓ README.md found - will be used for homepage")
+    else:
+        print(f"ℹ README.md not found - default homepage will be generated")
+        print(f"  Create {README_PATH} for a custom project overview")
     
     # Create docs directory if it doesn't exist
     OUTPUT_DIR.mkdir(exist_ok=True)
@@ -222,7 +261,11 @@ def generate_documentation():
         
         # List generated files organized by category
         categories = {
-            "Core Modules": [SOURCE_DIR / "__init__.py", SOURCE_DIR / "train.py", SOURCE_DIR / "predict.py"],
+            "Core Modules": [
+                SOURCE_DIR / "__init__.py",
+                SOURCE_DIR / "train.py",
+                SOURCE_DIR / "predict.py"
+            ],
             "Utilities": [
                 SOURCE_DIR / "utils" / "__init__.py",
                 SOURCE_DIR / "utils" / "config.py",
@@ -269,13 +312,19 @@ def generate_documentation():
         print("🎉 Documentation generation complete!")
         print("=" * 60)
         print(f"\nDocumentation location: {OUTPUT_DIR.absolute()}")
+        
+        # Check if index.html exists
+        index_file = OUTPUT_DIR / "index.html"
+        if index_file.exists():
+            print("\n✓ Homepage generated: index.html")
+            if has_readme:
+                print("  (Generated from README.md)")
+        
         print("\nTo view the documentation:")
         print("  1. Navigate to the 'docs/' directory")
         print("  2. Open 'index.html' in your web browser")
         print(f"\nQuick start:")
         
-        # Check if index.html exists
-        index_file = OUTPUT_DIR / "index.html"
         if index_file.exists():
             print(f"  open {index_file.absolute()}")
         else:
@@ -285,6 +334,10 @@ def generate_documentation():
                 print(f"  open {html_files[0].absolute()}")
             else:
                 print(f"  Check files in: {OUTPUT_DIR.absolute()}")
+        
+        if not has_readme:
+            print("\n💡 Tip: Create a README.md in the project root for a")
+            print("   customized documentation homepage with project overview!")
         
         print("=" * 60)
         
@@ -325,6 +378,11 @@ def main():
     
     This allows the script to be used in CI/CD pipelines or
     automated build systems.
+    
+    If README.md exists in the project root, it will be automatically
+    converted to the documentation homepage (index.html), providing
+    visitors with a project overview, quick start guide, and navigation
+    to detailed API documentation.
     """
     success = generate_documentation()
     sys.exit(0 if success else 1)

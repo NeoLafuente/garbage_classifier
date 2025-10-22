@@ -29,7 +29,32 @@
 
 
             <h2>API Documentation</h2>
-                
+                <ul class="memberlist">
+            <li>
+                    <a class="variable" href="#DATASET_PATH">DATASET_PATH</a>
+            </li>
+            <li>
+                    <a class="variable" href="#LOSS_CURVES_PATH">LOSS_CURVES_PATH</a>
+            </li>
+            <li>
+                    <a class="variable" href="#MODEL_PATH">MODEL_PATH</a>
+            </li>
+            <li>
+                    <a class="variable" href="#SAMPLE_IMG_PATH">SAMPLE_IMG_PATH</a>
+            </li>
+            <li>
+                    <a class="variable" href="#CLASS_NAMES">CLASS_NAMES</a>
+            </li>
+            <li>
+                    <a class="variable" href="#MAX_EPOCHS">MAX_EPOCHS</a>
+            </li>
+            <li>
+                    <a class="variable" href="#NUM_CLASSES">NUM_CLASSES</a>
+            </li>
+    </ul>
+
+
+
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
                 alt="pdoc logo"
@@ -129,10 +154,10 @@ structure matches the configured paths before running training or inference.</p>
 </span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;numpy&quot;</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="n">DATASET_PATH</span> <span class="o">=</span> <span class="s1">&#39;../data/raw/sample_dataset/&#39;</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="n">LOSS_CURVES_PATH</span> <span class="o">=</span> <span class="s1">&#39;../models/performance/loss_curves/&#39;</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s1">&#39;../models/weights/model_resnet18_garbage.ckpt&#39;</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="n">SAMPLE_IMG_PATH</span> <span class="o">=</span> <span class="s1">&#39;../data/raw/sample.jpg&#39;</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="n">DATASET_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/Garbage_Dataset_Classification/images/&#39;</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="n">LOSS_CURVES_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/performance/loss_curves/&#39;</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/weights/model_resnet18_garbage.ckpt&#39;</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="n">SAMPLE_IMG_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/sample.jpg&#39;</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="n">CLASS_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cardboard&quot;</span><span class="p">,</span> <span class="s2">&quot;glass&quot;</span><span class="p">,</span> <span class="s2">&quot;metal&quot;</span><span class="p">,</span> <span class="s2">&quot;paper&quot;</span><span class="p">,</span> <span class="s2">&quot;plastic&quot;</span><span class="p">,</span> <span class="s2">&quot;trash&quot;</span><span class="p">]</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="n">MAX_EPOCHS</span> <span class="o">=</span> <span class="mi">10</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="n">NUM_CLASSES</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">CLASS_NAMES</span><span class="p">)</span>
@@ -140,7 +165,91 @@ structure matches the configured paths before running training or inference.</p>
 
 
             </section>
-                
+                <section id="DATASET_PATH">
+                    <div class="attr variable">
+            <span class="name">DATASET_PATH</span>        =
+<input id="DATASET_PATH-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+            <label class="view-value-button pdoc-button" for="DATASET_PATH-view-value"></label><span class="default_value">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/Garbage_Dataset_Classification/images/&#39;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#DATASET_PATH"></a>
+    
+    
+
+                </section>
+                <section id="LOSS_CURVES_PATH">
+                    <div class="attr variable">
+            <span class="name">LOSS_CURVES_PATH</span>        =
+<span class="default_value">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/performance/loss_curves/&#39;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#LOSS_CURVES_PATH"></a>
+    
+    
+
+                </section>
+                <section id="MODEL_PATH">
+                    <div class="attr variable">
+            <span class="name">MODEL_PATH</span>        =
+<span class="default_value">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/models/weights/model_resnet18_garbage.ckpt&#39;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#MODEL_PATH"></a>
+    
+    
+
+                </section>
+                <section id="SAMPLE_IMG_PATH">
+                    <div class="attr variable">
+            <span class="name">SAMPLE_IMG_PATH</span>        =
+<span class="default_value">&#39;/home/alumno/Desktop/datos/SDOML/garbage_classifier/data/raw/sample.jpg&#39;</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SAMPLE_IMG_PATH"></a>
+    
+    
+
+                </section>
+                <section id="CLASS_NAMES">
+                    <div class="attr variable">
+            <span class="name">CLASS_NAMES</span>        =
+<span class="default_value">[&#39;cardboard&#39;, &#39;glass&#39;, &#39;metal&#39;, &#39;paper&#39;, &#39;plastic&#39;, &#39;trash&#39;]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#CLASS_NAMES"></a>
+    
+    
+
+                </section>
+                <section id="MAX_EPOCHS">
+                    <div class="attr variable">
+            <span class="name">MAX_EPOCHS</span>        =
+<span class="default_value">10</span>
+
+        
+    </div>
+    <a class="headerlink" href="#MAX_EPOCHS"></a>
+    
+    
+
+                </section>
+                <section id="NUM_CLASSES">
+                    <div class="attr variable">
+            <span class="name">NUM_CLASSES</span>        =
+<span class="default_value">6</span>
+
+        
+    </div>
+    <a class="headerlink" href="#NUM_CLASSES"></a>
+    
+    
+
+                </section>
     </main>
 <script>
     function escapeHTML(html) {

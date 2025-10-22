@@ -16,7 +16,14 @@
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
-        <div>
+        <div>            <a class="pdoc-button module-list-button" href="index.html">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
+  <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+</svg>                &nbsp;
+                Module Index
+            </a>
+
 
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
                    pattern=".+" required>
@@ -153,13 +160,13 @@ garbage dataset.</p>
 <pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Import the classifier</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">utils.custom_classes.GarbageClassifier</span><span class="w"> </span><span class="kn">import</span> <span class="n">GarbageClassifier</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load trained model</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">GarbageClassifier</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">cfg</span><span class="o">.</span><span class="n">MODEL_PATH</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">num_classes</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">NUM_CLASSES</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Make prediction</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">predict</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict_image</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pred_class</span><span class="p">,</span> <span class="n">pred_idx</span> <span class="o">=</span> <span class="n">predict_image</span><span class="p">(</span><span class="s2">&quot;sample.jpg&quot;</span><span class="p">)</span>
@@ -271,13 +278,13 @@ garbage dataset.</p>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">&gt;&gt;&gt; # Import the classifier</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">&gt;&gt;&gt; from utils.custom_classes.GarbageClassifier import GarbageClassifier</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">&gt;&gt;&gt; from utils import config as cfg</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">&gt;&gt;&gt; </span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">&gt;&gt;&gt;</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">&gt;&gt;&gt; # Load trained model</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">&gt;&gt;&gt; model = GarbageClassifier.load_from_checkpoint(</span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">...     cfg.MODEL_PATH,</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">...     num_classes=cfg.NUM_CLASSES</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">... )</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">&gt;&gt;&gt; </span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">&gt;&gt;&gt;</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">&gt;&gt;&gt; # Make prediction</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">&gt;&gt;&gt; from predict import predict_image</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">&gt;&gt;&gt; pred_class, pred_idx = predict_image(&quot;sample.jpg&quot;)</span>
@@ -294,11 +301,14 @@ garbage dataset.</p>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">For more detailed information, see the individual module documentation.</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="s1">&#39;train&#39;</span><span class="p">,</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="s1">&#39;predict&#39;</span><span class="p">,</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="s1">&#39;utils&#39;</span><span class="p">,</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="p">]</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">source</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">source</span><span class="w"> </span><span class="kn">import</span> <span class="n">predict</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="s1">&#39;train&#39;</span><span class="p">,</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>    <span class="s1">&#39;predict&#39;</span><span class="p">,</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>    <span class="s1">&#39;utils&#39;</span><span class="p">,</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="p">]</span>
 </span></pre></div>
 
 
