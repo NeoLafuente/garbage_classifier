@@ -1,4 +1,28 @@
-# app/sections/model_training.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Model Training Interface for Gradio Application.
+
+This module provides the Gradio UI components for training the garbage
+classification model with custom hyperparameters. It includes real-time
+progress tracking, carbon emissions monitoring, and training history
+visualization.
+
+The interface allows users to:
+- Configure training hyperparameters (batch size, learning rate, epochs)
+- Track carbon emissions during training
+- View training results and metrics
+- Review training history with environmental impact metrics
+
+Notes
+-----
+Training emissions are automatically tracked using CodeCarbon and stored
+in a CSV file alongside the model checkpoint. The interface displays
+emissions as both absolute values (kg CO₂eq) and relative comparisons
+(equivalent car driving distance).
+"""
+__docformat__ = "numpy"
+
 import gradio as gr
 from source.train import train_model
 from source.utils import config as cfg
@@ -12,12 +36,46 @@ import pandas as pd
 
 
 def get_emissions_path():
-    """Get the path to the emissions CSV file"""
+    """
+    Get the path to the emissions CSV file.
+    
+    Returns
+    -------
+    pathlib.Path
+        Path object pointing to the emissions.csv file in the model directory.
+    
+    Notes
+    -----
+    The emissions file is stored in the same directory as the trained model
+    checkpoint, as defined in the global configuration.
+    """
     return Path(cfg.MODEL_PATH).parent / "emissions.csv"
 
 
 def load_emissions_history():
-    """Load emissions history from CSV file and format it"""
+    """
+    Load and format emissions history from CSV file.
+    
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame containing the last 10 training sessions with formatted
+        columns including timestamp, duration, emissions, energy consumption,
+        and car distance equivalent. Returns error/info message if file
+        cannot be loaded or doesn't exist.
+    
+    Notes
+    -----
+    The function performs the following transformations:
+    - Selects relevant columns (timestamp, duration, emissions, energy)
+    - Adds units to column names for clarity
+    - Calculates car distance equivalent in meters
+    - Formats numeric values with appropriate precision
+    - Returns only the most recent 10 training sessions
+    
+    If the emissions file doesn't exist or cannot be read, returns a
+    DataFrame with an appropriate message.
+    """
     emissions_file = get_emissions_path()
     if emissions_file.exists():
         try:
@@ -64,30 +122,65 @@ def load_emissions_history():
 
 def run_training(batch_size, learning_rate, max_epochs, track_carbon, progress=gr.Progress()):
     """
-    Run model training with specified hyperparameters.
+    Execute model training with specified hyperparameters.
+    
+    This function serves as the Gradio wrapper for the training process,
+    handling progress updates, result formatting, and UI state management.
     
     Parameters
     ----------
     batch_size : int
-        Batch size for training
+        Number of samples per training batch. Larger values use more memory
+        but may improve training stability.
     learning_rate : float
-        Learning rate
+        Step size for the optimizer (e.g., 0.001, 1e-4). Controls how much
+        model weights are updated during training.
     max_epochs : int
-        Maximum number of epochs
+        Maximum number of complete passes through the training dataset.
     track_carbon : bool
-        Whether to track carbon emissions
-    progress : gr.Progress
-        Gradio progress tracker
-        
+        Whether to track and record carbon emissions during training using
+        CodeCarbon.
+    progress : gr.Progress, optional
+        Gradio progress tracker for updating the UI progress bar and status
+        messages.
+    
     Returns
     -------
-    tuple
-        (status_message, emissions_history_dataframe, carbon_display_text)
+    tuple of (str, pd.DataFrame, str)
+        - status_message : Markdown-formatted string with training results,
+          including metrics and carbon footprint information
+        - emissions_history : Updated DataFrame with training history
+        - carbon_display : Updated HTML string for the carbon counter display
+    
+    Notes
+    -----
+    The function includes a progress callback that updates the Gradio UI
+    in real-time during training. Training results include:
+    - Training and validation accuracy
+    - Model checkpoint location
+    - Loss curves location
+    - Carbon emissions (if tracked)
+    - Car distance equivalent
+    
+    If training fails, returns an error message while preserving the
+    existing emissions history and carbon display.
+    
+    See Also
+    --------
+    source.train.train_model : Core training function
+    load_emissions_history : Load training history from CSV
     """
     status_messages = []
     
     def progress_callback(message):
-        """Callback to update progress in Gradio UI"""
+        """
+        Callback to update progress in Gradio UI.
+        
+        Parameters
+        ----------
+        message : str
+            Progress message to display
+        """
         status_messages.append(message)
         progress(len(status_messages) / (max_epochs + 3), desc=message)
     
@@ -156,12 +249,55 @@ def run_training(batch_size, learning_rate, max_epochs, track_carbon, progress=g
 
 def model_training_tab(carbon_display):
     """
-    Create the Training Interface UI
+    Create the Training Interface UI section.
+    
+    Builds a Gradio interface for configuring and launching model training,
+    with real-time progress tracking, emissions monitoring, and training
+    history visualization.
     
     Parameters
     ----------
-    carbon_display : gr.Markdown
-        The carbon counter display component to update
+    carbon_display : gr.HTML
+        The carbon counter display component to update after training
+        completes. This component shows cumulative emissions across all
+        training sessions.
+    
+    Returns
+    -------
+    list of gr.Component
+        List containing [output, emissions_table] components for potential
+        external reference.
+    
+    Notes
+    -----
+    The interface is organized into sections:
+    
+    1. **Hyperparameters Panel:**
+       - Batch size slider (8-128)
+       - Learning rate input
+       - Max epochs slider (1-100)
+       - Carbon tracking checkbox
+       - Start training button
+    
+    2. **Status Panel:**
+       - Real-time training progress
+       - Training results and metrics
+       - Carbon footprint statistics
+    
+    3. **History Panel:**
+       - Recent training sessions table
+       - Emissions and energy consumption
+       - Car distance equivalents
+       - Refresh button
+    
+    The carbon tracking uses CodeCarbon and compares emissions to average
+    European car travel (120g CO₂/km).
+    
+    Examples
+    --------
+    >>> with gr.Blocks() as demo:
+    ...     carbon_display = gr.HTML()
+    ...     model_training_tab(carbon_display)
     """
     with gr.Column():
         gr.Markdown("### ⚙️ Model Training Interface")
