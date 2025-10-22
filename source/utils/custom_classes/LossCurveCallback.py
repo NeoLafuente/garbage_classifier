@@ -70,7 +70,7 @@ class LossCurveCallback(Callback):
         self.save_dir = save_dir
         os.makedirs(self.save_dir, exist_ok=True)
         self.train_losses = []
-        self.train_accs =[] 
+        self.train_accs = []
         self.val_losses = []
         self.val_accs = []
 

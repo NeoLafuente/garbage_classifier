@@ -12,7 +12,7 @@ from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
 from source.utils.custom_classes.LossCurveCallback import LossCurveCallback
 
 __all__ = [
-    'GarbageClassifier',
-    'GarbageDataModule',
-    'LossCurveCallback',
+    "GarbageClassifier",
+    "GarbageDataModule",
+    "LossCurveCallback",
 ]

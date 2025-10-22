@@ -1,15 +1,11 @@
 import os
 import zipfile
-import random
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from PIL import Image
-from sklearn.metrics.pairwise import cosine_similarity
-from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.spatial.distance import pdist
 from typing import Optional
 import cv2
 
@@ -19,9 +15,10 @@ class EdaAnalyzer:
     A class that encapsulates all Exploratory Data Analysis (EDA) utilities
     for the Garbage Classification dataset or similar image datasets.
 
-    This class provides methods for dataset management, visualization, and analysis,
-    including downloading datasets from Kaggle, loading metadata, plotting class
-    distributions, and computing prototype mean images.
+    This class provides methods for dataset management, visualization,
+    and analysis, including downloading datasets from Kaggle,
+    loading metadata, plotting class distributions, and computing
+    prototype mean images.
 
     Attributes
     ----------
@@ -39,7 +36,11 @@ class EdaAnalyzer:
         Metadata DataFrame containing dataset information.
     """
 
-    def __init__(self, root_path: str = "./data/raw", dataset_name: str = "Garbage_Dataset_Classification"):
+    def __init__(
+        self,
+        root_path: str = "./data/raw",
+        dataset_name: str = "Garbage_Dataset_Classification",
+    ):
         """
         Initialize the EdaAnalyzer instance.
 
@@ -48,7 +49,8 @@ class EdaAnalyzer:
         root_path : str, optional
             Path to the raw data folder. Default is "./data/raw".
         dataset_name : str, optional
-            Name of the dataset folder. Default is "Garbage_Dataset_Classification".
+            Name of the dataset folder. Default is
+            "Garbage_Dataset_Classification".
 
         Returns
         -------
@@ -57,7 +59,8 @@ class EdaAnalyzer:
         self.root_path = root_path
         self.dataset_path = os.path.join(root_path, dataset_name)
         self.zip_file = os.path.join(root_path, "garbage-dataset.zip")
-        self.kaggle_url = "https://www.kaggle.com/api/v1/datasets/download/zlatan599/garbage-dataset-classification"
+        self.kaggle_url = "https://www.kaggle.com/\
+            api/v1/datasets/download/zlatan599/garbage-dataset-classification"
         self.metadata_path = os.path.join(self.dataset_path, "metadata.csv")
         self.df = None
 
@@ -68,9 +71,10 @@ class EdaAnalyzer:
         """
         Download Kaggle dataset using curl and API credentials.
 
-        This method downloads the garbage dataset from Kaggle using the Kaggle API
-        credentials stored in ~/.kaggle/kaggle.json. The dataset is extracted and
-        the zip file is removed after extraction.
+        This method downloads the garbage dataset from Kaggle using the
+        Kaggle API credentials stored in ~/.kaggle/kaggle.json. The
+        dataset is extracted and the zip file is removed after
+        extraction.
 
         Parameters
         ----------
@@ -90,7 +94,9 @@ class EdaAnalyzer:
         os.makedirs(os.path.expanduser("~/.kaggle"), exist_ok=True)
         os.chmod(os.path.expanduser("~/.kaggle"), 0o700)
 
-        cmd = f"curl -L -o {self.zip_file} -u `jq -r .username ~/.kaggle/kaggle.json`:`jq -r .key ~/.kaggle/kaggle.json` {self.kaggle_url}"
+        cmd = f"curl -L -o {self.zip_file} -u \
+            `jq -r .username ~/.kaggle/kaggle.json`:\
+                `jq -r .key ~/.kaggle/kaggle.json` {self.kaggle_url}"
         os.system(cmd)
 
         print("Extracting dataset...")
@@ -104,8 +110,9 @@ class EdaAnalyzer:
         """
         Check if dataset exists; otherwise, download it.
 
-        Verifies the presence of the dataset at the expected path. If not found,
-        triggers the download process. If already present, prints a confirmation message.
+        Verifies the presence of the dataset at the expected path.
+        If not found, triggers the download process.
+        If already present, prints a confirmation message.
 
         Parameters
         ----------
@@ -133,8 +140,8 @@ class EdaAnalyzer:
 
         Returns
         -------
-        pd.DataFrame
-            The loaded metadata DataFrame containing image filenames and labels.
+        pd.DataFrame (The loaded metadata DataFrame containing image filenames
+        and labels).
 
         Raises
         ------
@@ -142,15 +149,22 @@ class EdaAnalyzer:
             If metadata.csv is not found at the expected path.
         """
         if not os.path.exists(self.metadata_path):
-            raise FileNotFoundError(f"Metadata file not found at {self.metadata_path}")
+            raise FileNotFoundError(f"Metadata file not found at \
+                {self.metadata_path}")
         self.df = pd.read_csv(self.metadata_path)
-        print(f"Loaded metadata: {len(self.df)} entries, {self.df['label'].nunique()} classes.")
+        print(
+            f"Loaded metadata: {len(self.df)} entries, \
+                {self.df['label'].nunique()} classes."
+        )
         return self.df
 
     # -------------------------------------------------------------------------
     # Visualization utilities
     # -------------------------------------------------------------------------
-    def plot_random_examples_per_class(self, filename: Optional[str] = None) -> Figure:
+    def plot_random_examples_per_class(
+        self,
+        filename: Optional[str] = None
+    ) -> Figure:
         """
         Plot a random image from each class and return the figure.
 
@@ -169,17 +183,22 @@ class EdaAnalyzer:
             The generated figure object containing the plotted images.
         """
         df = self.df
-        classes = df['label'].unique()
+        classes = df["label"].unique()
         palette = sns.color_palette("tab10", len(classes))
         class_colors = {cls: palette[i] for i, cls in enumerate(classes)}
 
         cols, rows = 3, (len(classes) + 2) // 3
-        fig, axes = plt.subplots(rows, cols, figsize=(cols*4, rows*4))
-        axes = axes.flatten() 
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
+        axes = axes.flatten()
 
         for i, cls in enumerate(classes):
-            img_filename = df[df['label'] == cls].sample(1).iloc[0]['filename']
-            img_path = os.path.join(self.dataset_path, "images", cls, img_filename)
+            img_filename = df[df["label"] == cls].sample(1).iloc[0]["filename"]
+            img_path = os.path.join(
+                self.dataset_path,
+                "images",
+                cls,
+                img_filename
+            )
             img = Image.open(img_path)
 
             ax = axes[i]
@@ -190,17 +209,20 @@ class EdaAnalyzer:
                 spine.set_edgecolor(class_colors[cls])
                 spine.set_linewidth(4)
 
-        for j in range(i+1, len(axes)):
+        for j in range(i + 1, len(axes)):
             axes[j].axis("off")
 
         plt.tight_layout()
 
         if filename:
             plt.savefig(filename, dpi=150)
-        
+
         return fig
 
-    def plot_class_distribution(self, filename: Optional[str] = None) -> Figure:
+    def plot_class_distribution(
+        self,
+        filename: Optional[str] = None
+    ) -> Figure:
         """
         Plot class distribution using seaborn and return the figure.
 
@@ -222,9 +244,9 @@ class EdaAnalyzer:
         sns.countplot(
             data=self.df,
             x="label",
-            order=self.df['label'].value_counts().index,
+            order=self.df["label"].value_counts().index,
             palette="tab10",
-            ax=ax
+            ax=ax,
         )
         ax.set_title("Class Distribution", fontsize=16)
         ax.set_xlabel("Class")
@@ -234,7 +256,7 @@ class EdaAnalyzer:
 
         if filename:
             fig.savefig(filename, dpi=150)
-        
+
         return fig
 
     # -------------------------------------------------------------------------
@@ -246,8 +268,8 @@ class EdaAnalyzer:
         Compute mean image per class using batch processing.
 
         Processes images in batches to compute the mean image for each class,
-        reducing memory overhead for large datasets. Images are converted to RGB
-        and normalized to float32.
+        reducing memory overhead for large datasets.
+        Images are converted to RGB and normalized to float32.
 
         Parameters
         ----------
@@ -266,57 +288,71 @@ class EdaAnalyzer:
         are skipped during processing.
         """
 
-        classes = self.df['label'].unique()
+        classes = self.df["label"].unique()
         result = {}
-        
+
         for cls in classes:
-            subset = self.df[self.df['label'] == cls]
+            subset = self.df[self.df["label"] == cls]
             count = 0
             mean_acc = None
-            
+
             for batch_start in range(0, len(subset), batch_size):
                 batch_end = min(batch_start + batch_size, len(subset))
                 batch_rows = subset.iloc[batch_start:batch_end]
-                
+
                 imgs = []
                 for _, row in batch_rows.iterrows():
-                    img_path = os.path.join(self.dataset_path, "images", row['label'], row['filename'])
+                    img_path = os.path.join(
+                        self.dataset_path,
+                        "images",
+                        row["label"],
+                        row["filename"]
+                    )
                     try:
                         img = Image.open(img_path).convert("RGB")
                         imgs.append(np.array(img, dtype=np.float32))
-                    except:
+                    except Exception:
                         continue
-                
+
                 if imgs:
                     imgs_stack = np.stack(imgs, axis=0)
                     batch_mean = np.mean(imgs_stack, axis=0)
-                    
+
                     # Actualizar media acumulada
                     if mean_acc is None:
                         mean_acc = batch_mean
                     else:
-                        mean_acc = (mean_acc * count + batch_mean * len(imgs)) / (count + len(imgs))
-                    
+                        aux1 = mean_acc * count
+                        aux2 = batch_mean * len(imgs)
+                        mean_acc = (aux1 + aux2) / (
+                            count + len(imgs)
+                        )
+
                     count += len(imgs)
-            
+
             if mean_acc is not None:
                 result[cls] = mean_acc / 255.0
-        
+
         return result
 
-    def plot_mean_images_per_class(self, filename: Optional[str] = None) -> Figure:
+    def plot_mean_images_per_class(
+        self,
+        filename: Optional[str] = None
+    ) -> Figure:
         """
         Compute or load and plot mean images per class, returning the figure.
 
-        Attempts to load pre-computed mean images from a .npy file. If not found,
-        computes them using batch processing and optionally saves the result.
+        Attempts to load pre-computed mean images from a .npy file.
+        If not found, computes them using batch processing and
+        optionally saves the result.
         Displays all mean images in a grid layout.
 
         Parameters
         ----------
         filename : str, optional
-            Path to the .npy file containing pre-computed mean images, or destination
-            path for saving newly computed mean images. Default is None (no caching).
+            Path to the .npy file containing pre-computed mean images,
+            or destination path for saving newly computed mean images.
+            Default is None (no caching).
 
         Returns
         -------
@@ -325,8 +361,8 @@ class EdaAnalyzer:
 
         Notes
         -----
-        If filename is provided and the file does not exist, computed mean images
-        will be saved to this path for future use.
+        If filename is provided and the file does not exist, computed
+        mean images will be saved to this path for future use.
         """
 
         mean_images = None
@@ -336,7 +372,8 @@ class EdaAnalyzer:
                 print(f"[INFO] Loading mean images from {filename}")
                 mean_images = np.load(filename, allow_pickle=True).item()
             except Exception as e:
-                print(f"[WARN] Could not load mean images from {filename}: {e}")
+                print(f"[WARN] Could not load \
+                    mean images from {filename}: {e}")
 
         if mean_images is None:
             print("[INFO] Computing mean images...")
@@ -348,7 +385,7 @@ class EdaAnalyzer:
         # --- Plot ---
         cols, rows = 3, (len(mean_images) + 2) // 3
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
-        axes = axes.flatten() 
+        axes = axes.flatten()
 
         for i, (cls, img) in enumerate(mean_images.items()):
             ax = axes[i]
@@ -356,20 +393,23 @@ class EdaAnalyzer:
             ax.set_title(f"Mean {cls}")
             ax.axis("off")
 
-        for j in range(i+1, len(axes)):
+        for j in range(i + 1, len(axes)):
             axes[j].axis("off")
 
         plt.tight_layout()
 
         return fig
 
-    def plot_mean_images_per_class_with_otsu(self, threshold: float = 0.0, filename: Optional[str] = None) -> Figure:
+    def plot_mean_images_per_class_with_otsu(
+        self, threshold: float = 0.0, filename: Optional[str] = None
+    ) -> Figure:
         """
         Plot mean images per class applying an adjustable Otsu threshold.
 
-        Loads pre-computed mean images and applies a custom thresholding strategy
-        based on Otsu's method with user-defined adjustments. Generates binary masks
-        and overlays them on the original mean images with contour visualization.
+        Loads pre-computed mean images and applies a custom thresholding
+        strategy based on Otsu's method with user-defined adjustments.
+        Generates binary masks and overlays them on the original mean
+        images with contour visualization.
 
         Parameters
         ----------
@@ -380,8 +420,8 @@ class EdaAnalyzer:
             - 1: Minimum threshold (0, maximal foreground).
             Default is 0.0.
         filename : str, optional
-            Path to the .npy file containing pre-computed mean images. Must end with
-            ".npy" extension. Default is None.
+            Path to the .npy file containing pre-computed mean images.
+            Must end with ".npy" extension. Default is None.
 
         Returns
         -------
@@ -396,8 +436,9 @@ class EdaAnalyzer:
 
         Notes
         -----
-        Red overlays indicate pixels below the threshold (potential foreground objects).
-        Contours are traced around connected components in the binary mask.
+        Red overlays indicate pixels below the threshold (potential
+        foreground objects). Contours are traced around connected
+        components in the binary mask.
         """
 
         mean_images = None
@@ -407,7 +448,8 @@ class EdaAnalyzer:
                 print(f"[INFO] Loading mean images from {filename}")
                 mean_images = np.load(filename, allow_pickle=True).item()
             except Exception as e:
-                print(f"[WARN] Could not load mean images from {filename}: {e}")
+                print(f"[WARN] Could not load \
+                    mean images from {filename}: {e}")
                 return None
         else:
             print("[WARN] No mean images found or invalid file path.")
@@ -416,7 +458,11 @@ class EdaAnalyzer:
         n_classes = len(mean_images)
         n_cols = min(3, n_classes)
         n_rows = int(np.ceil(n_classes / n_cols))
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(5 * n_cols, 5 * n_rows))
+        fig, axes = plt.subplots(
+            n_rows,
+            n_cols,
+            figsize=(5 * n_cols, 5 * n_rows)
+        )
         axes = np.array(axes).flatten()
 
         for i, (cls, mean_image) in enumerate(mean_images.items()):
@@ -424,9 +470,15 @@ class EdaAnalyzer:
             gray = cv2.cvtColor(mean_image, cv2.COLOR_RGB2GRAY)
 
             if gray.dtype != np.uint8:
-                gray = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+                gray = cv2.normalize(
+                    gray, None, 0, 255, cv2.NORM_MINMAX
+                ).astype(
+                    np.uint8
+                )
 
-            otsu_thresh, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            otsu_thresh, _ = cv2.threshold(
+                gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+            )
 
             adj = np.clip(threshold, -1, 1)
             if adj == -1:
@@ -439,7 +491,12 @@ class EdaAnalyzer:
                 else:
                     final_thresh = otsu_thresh - (otsu_thresh - 0) * adj
 
-            _, binary = cv2.threshold(gray, final_thresh, 255, cv2.THRESH_BINARY)
+            _, binary = cv2.threshold(
+                gray,
+                final_thresh,
+                255,
+                cv2.THRESH_BINARY
+            )
 
             mask = (binary == 0).astype(np.uint8)
             kernel = np.ones((3, 3), np.uint8)
@@ -449,14 +506,22 @@ class EdaAnalyzer:
 
             ax.imshow(mean_image)
             ax.imshow(red_overlay)
-            ax.set_title(f"{cls}\nOtsu adj={threshold:.2f} (thr={final_thresh:.1f})")
+            ax.set_title(f"{cls}\nOtsu adj={threshold:.2f} \
+                (thr={final_thresh:.1f})")
             ax.axis("off")
 
-            contours, _ = cv2.findContours(mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(
+                mask_dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
             for contour in contours:
                 contour = contour.squeeze()
                 if contour.ndim == 2:
-                    ax.plot(contour[:, 0], contour[:, 1], color="red", linewidth=2)
+                    ax.plot(
+                        contour[:, 0],
+                        contour[:, 1],
+                        color="red",
+                        linewidth=2
+                    )
 
         plt.tight_layout()
 

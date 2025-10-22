@@ -27,7 +27,6 @@ import gradio as gr
 from source.train import train_model
 from source.utils import config as cfg
 from source.utils.carbon_utils import (
-    format_car_distance,
     format_car_distance_meters_only,
     format_total_emissions_display,
 )
@@ -90,7 +89,9 @@ def load_emissions_history():
             }
 
             # Get only available columns
-            available_cols = [col for col in column_mapping.keys() if col in df.columns]
+            available_cols = [
+                col for col in column_mapping.keys() if col in df.columns
+            ]
             df_filtered = df[available_cols].copy()
 
             # Rename columns to include units
@@ -99,31 +100,36 @@ def load_emissions_history():
                 inplace=True,
             )
 
-            # Add car distance column if emissions exist (meters only, unit in column name)
+            # Add car distance column if emissions exist
             if "Emissions (kg CO₂eq)" in df_filtered.columns:
                 df_filtered["Car Distance Equivalent (m)"] = df_filtered[
                     "Emissions (kg CO₂eq)"
                 ].apply(
                     lambda x: (
-                        format_car_distance_meters_only(x) if pd.notna(x) else "N/A"
+                        format_car_distance_meters_only(x)
+                        if pd.notna(x) else "N/A"
                     )
                 )
 
             # Format numeric columns
             if "Duration (s)" in df_filtered.columns:
-                df_filtered["Duration (s)"] = df_filtered["Duration (s)"].round(2)
+                df_filtered["Duration (s)"] = \
+                    df_filtered["Duration (s)"].round(2)
             if "Emissions (kg CO₂eq)" in df_filtered.columns:
                 df_filtered["Emissions (kg CO₂eq)"] = df_filtered[
                     "Emissions (kg CO₂eq)"
                 ].apply(lambda x: f"{x:.6f}" if pd.notna(x) else "N/A")
             if "Energy (kWh)" in df_filtered.columns:
-                df_filtered["Energy (kWh)"] = df_filtered["Energy (kWh)"].round(4)
+                df_filtered["Energy (kWh)"] = \
+                    df_filtered["Energy (kWh)"].round(4)
 
             # Return last 10 trainings
             return df_filtered.tail(10)
 
         except Exception as e:
-            return pd.DataFrame({"Error": [f"Could not load emissions data: {str(e)}"]})
+            return pd.DataFrame(
+                {"Error": [f"Could not load emissions data: {str(e)}"]}
+            )
     return pd.DataFrame({"Info": ["No training history yet"]})
 
 
@@ -214,7 +220,8 @@ def run_training(
                 )
             if metrics.get("val_acc") is not None:
                 metrics_info += (
-                    f"- **Validation Accuracy:** {metrics['val_acc']*100:.2f}%\n"
+                    f"- **Validation Accuracy:** \
+                        {metrics['val_acc']*100:.2f}%\n"
                 )
 
         # Format emissions
@@ -222,17 +229,20 @@ def run_training(
         if result.get("emissions"):
             emissions_info = (
                 f"\n\n### 🌍 Carbon Footprint\n"
-                f"- **Emissions:** {result['emissions']['emissions_g']:.2f}g CO₂eq "
+                f"- **Emissions:** \
+                    {result['emissions']['emissions_g']:.2f}g CO₂eq "
                 f"({result['emissions']['emissions_kg']:.6f} kg)\n"
-                f"- **🚗 Car equivalent:** {result['emissions']['car_distance_formatted']} driven\n"
+                f"- **🚗 Car equivalent:** \
+                    {result['emissions']['car_distance_formatted']} driven\n"
             )
             if result["emissions"]["duration_seconds"]:
                 emissions_info += (
-                    f"- **Duration:** {result['emissions']['duration_seconds']:.1f}s\n"
+                    f"- **Duration:** \
+                        {result['emissions']['duration_seconds']:.1f}s\n"
                 )
 
             emissions_info += (
-                f"\n*Based on average European car emissions of 120g CO₂/km*"
+                "\n*Based on average European car emissions of 120g CO₂/km*"
             )
 
         final_message = (
@@ -317,8 +327,10 @@ def model_training_tab(carbon_display):
     with gr.Column():
         gr.Markdown("### ⚙️ Model Training Interface")
         gr.Markdown(
-            "Configure and train the garbage classification model with custom hyperparameters. "
-            "Carbon emissions are tracked automatically and compared to car travel distance."
+            "Configure and train the garbage \
+                classification model with custom hyperparameters. "
+            "Carbon emissions are tracked \
+                automatically and compared to car travel distance."
         )
 
         with gr.Row():
@@ -355,12 +367,15 @@ def model_training_tab(carbon_display):
                     info="Monitor environmental impact during training",
                 )
 
-                train_btn = gr.Button("🚀 Start Training", variant="primary", size="lg")
+                train_btn = gr.Button(
+                    "🚀 Start Training", variant="primary", size="lg"
+                )
 
             with gr.Column(scale=1):
                 gr.Markdown("#### Training Status")
                 output = gr.Markdown(
-                    "Click 'Start Training' to begin...", label="Status", height=400
+                    "Click 'Start Training' to begin...",
+                    label="Status", height=400
                 )
 
         gr.Markdown("---")
@@ -380,9 +395,11 @@ def model_training_tab(carbon_display):
 
         gr.Markdown("---")
         gr.Markdown(
-            "**🚗 Car Distance Comparison:** Based on average European car emissions (120g CO₂/km). "
+            "**🚗 Car Distance Comparison:** Based on average \
+                European car emissions (120g CO₂/km). "
             "Carbon Footprint was calculated using CodeCarbon. "
-            "Learn more about CodeCarbon at [codecarbon.io](https://codecarbon.io/)"
+            "Learn more about CodeCarbon at [codecarbon.io]\
+                (https://codecarbon.io/)"
         )
 
         # Connect button to training function - now updates carbon display too
@@ -393,6 +410,8 @@ def model_training_tab(carbon_display):
         )
 
         # Refresh emissions history independently
-        refresh_btn.click(fn=load_emissions_history, inputs=[], outputs=emissions_table)
+        refresh_btn.click(
+            fn=load_emissions_history, inputs=[], outputs=emissions_table
+        )
 
     return [output, emissions_table]

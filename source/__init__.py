@@ -111,7 +111,7 @@ from source import train
 from source import predict
 
 __all__ = [
-    'train',
-    'predict',
-    'utils',
+    "train",
+    "predict",
+    "utils",
 ]

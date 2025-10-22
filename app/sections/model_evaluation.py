@@ -28,7 +28,11 @@ import gradio as gr
 from source.utils.carbon_utils import format_total_emissions_display
 from source.utils import config as cfg
 from source.utils.custom_classes.EvalAnalyzer import GarbageModelAnalyzer
-from source.predict import predict_image, predict_batch, load_model_for_inference
+from source.predict import (
+    predict_image,
+    predict_batch,
+    load_model_for_inference
+)
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -74,7 +78,9 @@ def get_available_models():
     }
     """
     models_dict = {
-        "Best Model (Provided)": str(Path("models/best/model_resnet18_garbage.ckpt")),
+        "Best Model (Provided)": str(Path(
+            "models/best/model_resnet18_garbage.ckpt"
+        )),
         "Latest Trained Model": str(cfg.MODEL_PATH),
     }
     return models_dict
@@ -144,7 +150,11 @@ confusion_matrices_state = {
 # ========================
 
 
-def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progress()):
+def generate_confusion_matrix(
+    model_choice,
+    show_normalized,
+    progress=gr.Progress()
+):
     """
     Generate and cache both raw and normalized confusion matrices.
 
@@ -184,10 +194,11 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
 
     See Also
     --------
-    toggle_confusion_matrix : Switch between raw/normalized without regenerating
+    toggle_confusion_matrix : Switch between raw/normalized without
+    regenerating.
     is_cache_valid : Cache validation logic
     """
-    global confusion_matrices_state
+    # global confusion_matrices_state # TODO: Revert this (uncomment)
 
     if not model_choice:
         return None, "Please select a model first", gr.update(visible=False)
@@ -216,8 +227,10 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
         )
 
     # Check disk cache
-    cache_file_raw = CACHE_DIR / f"cm_raw_{model_choice.replace(' ', '_')}.pkl"
-    cache_file_norm = CACHE_DIR / f"cm_norm_{model_choice.replace(' ', '_')}.pkl"
+    cache_file_raw = \
+        CACHE_DIR / f"cm_raw_{model_choice.replace(' ', '_')}.pkl"
+    cache_file_norm = \
+        CACHE_DIR / f"cm_norm_{model_choice.replace(' ', '_')}.pkl"
 
     if is_cache_valid(cache_file_raw, model_path) and is_cache_valid(
         cache_file_norm, model_path
@@ -263,7 +276,9 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
 
         num_classes = cfg.NUM_CLASSES
         cm_raw = confusion_matrix(
-            labels.cpu().numpy(), preds.cpu().numpy(), labels=range(num_classes)
+            labels.cpu().numpy(),
+            preds.cpu().numpy(),
+            labels=range(num_classes)
         )
         cm_norm = cm_raw.astype("float") / cm_raw.sum(axis=1)[:, np.newaxis]
 
@@ -340,7 +355,7 @@ def toggle_confusion_matrix(show_normalized):
     --------
     generate_confusion_matrix : Generate and cache both matrix versions
     """
-    global confusion_matrices_state
+    # global confusion_matrices_state # TODO: Revert this (uncomment)
 
     if show_normalized:
         if confusion_matrices_state["normalized"] is not None:
@@ -501,7 +516,8 @@ def load_loss_curves(model_choice):
         if not metrics_path.exists():
             return (
                 None,
-                f"❌ No training metrics found for {model_choice}. Path: {metrics_path}",
+                f"❌ No training metrics found for \
+                    {model_choice}. Path: {metrics_path}",
             )
 
         with open(metrics_path, "r") as f:
@@ -517,13 +533,26 @@ def load_loss_curves(model_choice):
         epochs = range(1, len(train_losses) + 1)
 
         if train_losses:
-            ax.plot(epochs, train_losses, "b-o", label="Train Loss", linewidth=2)
+            ax.plot(
+                epochs,
+                train_losses,
+                "b-o",
+                label="Train Loss",
+                linewidth=2
+            )
         if val_losses:
-            ax.plot(epochs, val_losses, "r-s", label="Validation Loss", linewidth=2)
+            ax.plot(
+                epochs,
+                val_losses,
+                "r-s",
+                label="Validation Loss",
+                linewidth=2
+            )
 
         ax.set_xlabel("Epoch", fontsize=12)
         ax.set_ylabel("Loss", fontsize=12)
-        ax.set_title(f"Loss Curves - {model_choice}", fontsize=14, fontweight="bold")
+        ax.set_title(f"Loss Curves - \
+            {model_choice}", fontsize=14, fontweight="bold")
         ax.legend(fontsize=10)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
@@ -571,7 +600,8 @@ def load_accuracy_curves(model_choice):
         if not metrics_path.exists():
             return (
                 None,
-                f"❌ No training metrics found for {model_choice}. Path: {metrics_path}",
+                f"❌ No training metrics found for \
+                    {model_choice}. Path: {metrics_path}",
             )
 
         with open(metrics_path, "r") as f:
@@ -605,17 +635,20 @@ def load_accuracy_curves(model_choice):
         ax.set_xlabel("Epoch", fontsize=12)
         ax.set_ylabel("Accuracy", fontsize=12)
         ax.set_title(
-            f"Accuracy Curves - {model_choice}", fontsize=14, fontweight="bold"
+            f"Accuracy Curves - \
+                {model_choice}", fontsize=14, fontweight="bold"
         )
         ax.legend(fontsize=10)
         ax.grid(True, alpha=0.3)
         ax.set_ylim([0, 1])
         plt.tight_layout()
 
-        return fig, f"✅ Accuracy curves loaded successfully from {model_choice}"
+        return fig, f"✅ Accuracy curves \
+            loaded successfully from {model_choice}"
 
     except Exception as e:
-        return None, f"❌ Error loading accuracy curves: {str(e)}"
+        return None, f"❌ Error loading \
+            accuracy curves: {str(e)}"
 
 
 # ========================
@@ -641,7 +674,8 @@ def predict_single_image_gradio(
     carbon_display_text : str
         Current HTML string for the carbon display (to be updated).
     track_carbon : bool, optional
-        Whether to track carbon emissions for this prediction, by default True.
+        Whether to track carbon emissions for this prediction,
+        by default True.
 
     Returns
     -------
@@ -674,7 +708,9 @@ def predict_single_image_gradio(
     try:
         models_dict = get_available_models()
         model_path = models_dict.get(model_choice)
-        model, device, transform = load_model_for_inference(model_path=model_path)
+        model, device, transform = load_model_for_inference(
+            model_path=model_path
+        )
 
         result = predict_image(
             image,
@@ -687,13 +723,15 @@ def predict_single_image_gradio(
         fig, ax = plt.subplots(figsize=(10, 6))
         probs_list = [result["probabilities"][cls] for cls in cfg.CLASS_NAMES]
         pred_idx = result["predicted_idx"]
+        aux_list = range(len(cfg.CLASS_NAMES))
         colors = [
-            "green" if i == pred_idx else "skyblue" for i in range(len(cfg.CLASS_NAMES))
+            "green" if i == pred_idx else "skyblue" for i in aux_list
         ]
         bars = ax.barh(cfg.CLASS_NAMES, probs_list, color=colors)
         ax.set_xlabel("Probability", fontsize=12)
         ax.set_title(
-            f'Prediction Probabilities\nPredicted Class: {result["predicted_class"]}',
+            f'Prediction Probabilities\nPredicted Class: \
+                {result["predicted_class"]}',
             fontsize=14,
             fontweight="bold",
         )
@@ -710,19 +748,23 @@ def predict_single_image_gradio(
 
         plt.tight_layout()
 
-        result_text = f"### 🎯 Prediction: **{result['predicted_class']}**\n\n"
+        result_text = f"### 🎯 Prediction: \
+        **{result['predicted_class']}**\n\n"
         result_text += f"**Confidence:** {result['confidence']*100:.2f}%\n\n"
         result_text += "**All Probabilities:**\n"
         for class_name, prob in result["probabilities"].items():
-            emoji = "🏆" if class_name == result["predicted_class"] else "  "
+            emoji = "🏆" if class_name == result["predicted_class"] \
+                else "  "
             result_text += f"{emoji} {class_name}: {prob*100:.2f}%\n"
 
         updated_carbon_display = carbon_display_text
         if result["emissions"]:
             emissions = result["emissions"]
-            result_text += f"\n\n### 🌍 Carbon Footprint\n"
-            result_text += f"- **Emissions:** {emissions['emissions_g']:.4f}g CO₂eq\n"
-            result_text += f"- **🚗 Car equivalent:** {emissions['car_distance_formatted']} driven\n"
+            result_text += "\n\n### 🌍 Carbon Footprint\n"
+            result_text += f"- **Emissions:** \
+                {emissions['emissions_g']:.4f}g CO₂eq\n"
+            result_text += f"- **🚗 Car equivalent:** \
+                {emissions['car_distance_formatted']} driven\n"
             updated_carbon_display = format_total_emissions_display(
                 get_emissions_path()
             )
@@ -733,7 +775,9 @@ def predict_single_image_gradio(
         return None, f"❌ Error: {str(e)}", carbon_display_text
 
 
-def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon=True):
+def predict_folder_gradio(
+    model_choice, files, carbon_display_text, track_carbon=True
+):
     """
     Gradio wrapper for batch prediction on multiple images.
 
@@ -791,7 +835,9 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
     try:
         models_dict = get_available_models()
         model_path = models_dict.get(model_choice)
-        model, device, transform = load_model_for_inference(model_path=model_path)
+        model, device, transform = load_model_for_inference(
+            model_path=model_path
+        )
 
         image_paths = [file.name for file in files]
 
@@ -825,17 +871,22 @@ def predict_folder_gradio(model_choice, files, carbon_display_text, track_carbon
         df_results = pd.DataFrame(df_data)
 
         summary = batch_result["summary"]
-        result_text = f"### 📊 Batch Prediction Results\n\n"
-        result_text += f"**Total images processed:** {summary['total_images']}\n"
-        result_text += f"**Successful predictions:** {summary['successful']}\n\n"
+        result_text = "### 📊 Batch Prediction Results\n\n"
+        result_text += f"**Total images processed:** \
+            {summary['total_images']}\n"
+        result_text += f"**Successful predictions:** \
+            {summary['successful']}\n\n"
 
         updated_carbon_display = carbon_display_text
         if batch_result["emissions"]:
             emissions = batch_result["emissions"]
-            result_text += f"### 🌍 Carbon Footprint\n"
-            result_text += f"- **Emissions:** {emissions['emissions_g']:.4f}g CO₂eq\n"
-            result_text += f"- **🚗 Car equivalent:** {emissions['car_distance_formatted']} driven\n"
-            result_text += f"- **Avg per image:** {emissions['emissions_per_image_g']:.4f}g CO₂eq\n"
+            result_text += "### 🌍 Carbon Footprint\n"
+            result_text += f"- **Emissions:** \
+                {emissions['emissions_g']:.4f}g CO₂eq\n"
+            result_text += f"- **🚗 Car equivalent:** \
+                {emissions['car_distance_formatted']} driven\n"
+            result_text += f"- **Avg per image:** \
+                {emissions['emissions_per_image_g']:.4f}g CO₂eq\n"
             updated_carbon_display = format_total_emissions_display(
                 get_emissions_path()
             )
@@ -902,7 +953,8 @@ def model_evaluation_tab(carbon_display):
     with gr.Column():
         gr.Markdown("### 🔬 Model Evaluation & Inference")
         gr.Markdown(
-            "Evaluate trained models, visualize metrics, and make predictions on new images."
+            "Evaluate trained models, visualize metrics, \
+                and make predictions on new images."
         )
 
         gr.Markdown("#### 🧠 Model Selection")
@@ -910,7 +962,8 @@ def model_evaluation_tab(carbon_display):
             choices=list(get_available_models().keys()),
             value=list(get_available_models().keys())[0],
             label="Select Model",
-            info="Choose between the best provided model or your latest trained model",
+            info="Choose between the best provided model or \
+                your latest trained model",
         )
 
         gr.Markdown("---")
@@ -922,10 +975,13 @@ def model_evaluation_tab(carbon_display):
                 show_normalized = gr.Checkbox(
                     label="Show Normalized",
                     value=False,
-                    info="Toggle between raw counts and normalized percentages",
+                    info="Toggle between raw counts and normalized \
+                        percentages",
                     visible=False,
                 )
-                cm_button = gr.Button("Generate Confusion Matrix", variant="primary")
+                cm_button = gr.Button(
+                    "Generate Confusion Matrix", variant="primary"
+                )
                 cm_plot = gr.Plot(label="Confusion Matrix")
                 cm_status = gr.Markdown("")
 
@@ -953,7 +1009,9 @@ def model_evaluation_tab(carbon_display):
                 )
 
             with gr.Tab("Accuracy Curves"):
-                acc_button = gr.Button("Load Accuracy Curves", variant="primary")
+                acc_button = gr.Button(
+                    "Load Accuracy Curves", variant="primary"
+                )
                 acc_plot = gr.Plot(label="Accuracy Curves")
                 acc_status = gr.Markdown("")
 
@@ -983,7 +1041,8 @@ def model_evaluation_tab(carbon_display):
         with gr.Tabs():
             with gr.Tab("Single Image"):
                 gr.Markdown(
-                    "Upload an image to classify it into one of the garbage categories."
+                    "Upload an image to classify it into one of \
+                        the garbage categories."
                 )
 
                 with gr.Row():
@@ -999,9 +1058,13 @@ def model_evaluation_tab(carbon_display):
                         )
 
                     with gr.Column(scale=1):
-                        single_probs_plot = gr.Plot(label="Class Probabilities")
+                        single_probs_plot = gr.Plot(
+                            label="Class Probabilities"
+                        )
 
-                single_result_text = gr.Markdown("Upload an image and click 'Predict'")
+                single_result_text = gr.Markdown(
+                    "Upload an image and click 'Predict'"
+                )
 
                 single_predict_button.click(
                     fn=predict_single_image_gradio,
@@ -1011,14 +1074,20 @@ def model_evaluation_tab(carbon_display):
                         carbon_display,
                         single_track_carbon,
                     ],
-                    outputs=[single_probs_plot, single_result_text, carbon_display],
+                    outputs=[
+                        single_probs_plot,
+                        single_result_text,
+                        carbon_display
+                    ],
                 )
 
             with gr.Tab("Batch Prediction"):
-                gr.Markdown("Upload multiple images to classify them all at once.")
+                gr.Markdown("Upload multiple images \
+                    to classify them all at once.")
 
                 batch_image_input = gr.File(
-                    label="Upload Images", file_count="multiple", file_types=["image"]
+                    label="Upload Images",
+                    file_count="multiple", file_types=["image"]
                 )
                 batch_track_carbon = gr.Checkbox(
                     label="🌍 Track Carbon Emissions", value=True
@@ -1027,9 +1096,12 @@ def model_evaluation_tab(carbon_display):
                     "🔍 Predict All", variant="primary", size="lg"
                 )
 
-                batch_result_text = gr.Markdown("Upload images and click 'Predict All'")
+                batch_result_text = gr.Markdown(
+                    "Upload images and click 'Predict All'"
+                )
                 batch_results_table = gr.Dataframe(
-                    label="Prediction Results", interactive=False, wrap=True
+                    label="Prediction Results",
+                    interactive=False, wrap=True
                 )
 
                 batch_predict_button.click(
@@ -1040,12 +1112,18 @@ def model_evaluation_tab(carbon_display):
                         carbon_display,
                         batch_track_carbon,
                     ],
-                    outputs=[batch_results_table, batch_result_text, carbon_display],
+                    outputs=[
+                        batch_results_table,
+                        batch_result_text,
+                        carbon_display
+                    ],
                 )
 
         gr.Markdown("---")
         gr.Markdown(
-            "**ℹ️ Info:** Carbon emissions are tracked for inference operations and added to the total carbon footprint."
+            "**ℹ️ Info:** Carbon emissions are tracked for \
+                inference operations and added to the total \
+                    carbon footprint."
         )
 
     return []

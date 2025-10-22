@@ -205,9 +205,9 @@ def generate_documentation():
     # Check for README.md
     has_readme = check_readme_exists()
     if has_readme:
-        print(f"✓ README.md found - will be used for homepage")
+        print("✓ README.md found - will be used for homepage")
     else:
-        print(f"ℹ README.md not found - default homepage will be generated")
+        print("ℹ README.md not found - default homepage will be generated")
         print(f"  Create {README_PATH} for a custom project overview")
     
     # Create docs directory if it doesn't exist
@@ -246,7 +246,7 @@ def generate_documentation():
     try:
         # Run pdoc with modified environment
         print("Running pdoc...")
-        result = subprocess.run(
+        subprocess.run(
             cmd,
             capture_output=True,
             text=True,
@@ -323,7 +323,7 @@ def generate_documentation():
         print("\nTo view the documentation:")
         print("  1. Navigate to the 'docs/' directory")
         print("  2. Open 'index.html' in your web browser")
-        print(f"\nQuick start:")
+        print("\nQuick start:")
         
         if index_file.exists():
             print(f"  open {index_file.absolute()}")
