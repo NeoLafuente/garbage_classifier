@@ -8,13 +8,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
+from pathlib import Path
 from PIL import Image
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.calibration import calibration_curve
 
-from utils.custom_classes.GarbageClassifier import GarbageClassifier
-from utils.custom_classes.GarbageDataModule import GarbageDataModule
-from utils import config as cfg
+from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
+from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
+from source.utils import config as cfg
 
 
 class GarbageModelAnalyzer:
@@ -22,7 +23,14 @@ class GarbageModelAnalyzer:
         self.dataset_path = dataset_path or os.path.join("..", "data", "raw", "sample_dataset")
         self.performance_path = performance_path or '../reports/figures/performance/'
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.df = pd.read_csv(os.path.join(cfg.DATASET_PATH, "Garbage_Dataset_Classification", "metadata.csv"))
+        metadata_path = Path(cfg.DATASET_PATH).parent / "metadata.csv"
+        
+        if metadata_path.exists():
+            self.df = pd.read_csv(metadata_path)
+        else:
+            print(f"Warning: metadata.csv not found at {metadata_path}")
+            self.df = None
+        
         self.model = None
         self.data_module = None
 
@@ -47,6 +55,8 @@ class GarbageModelAnalyzer:
         all_preds, all_labels, all_probs = [], [], []
         with torch.no_grad():
             for xb, yb in loader:
+                xb = xb.to(self.device)
+                yb = yb.to(self.device)
                 out = self.model(xb)
                 preds = out.argmax(dim=1)
                 probs = torch.softmax(out, dim=1)
@@ -133,10 +143,22 @@ class GarbageModelAnalyzer:
         num_classes = self.data_module.num_classes
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         axes = axes.flatten()
+        
+        if isinstance(y_true, torch.Tensor):
+            y_true_np = y_true.cpu().numpy()
+        else:
+            y_true_np = y_true
+        
+        # y_probs ya debería estar en numpy (desde evaluate_loader)
+        # pero por si acaso:
+        if isinstance(y_probs, torch.Tensor):
+            y_probs = y_probs.cpu().numpy()
+        
         for c in range(num_classes):
             ax = axes[c]
-            y_true_c = (y_true.numpy() == c).astype(int)
+            y_true_c = (y_true_np == c).astype(int)
             y_prob_c = y_probs[:, c]
+            
             frac_pos, mean_pred = calibration_curve(y_true_c, y_prob_c, n_bins=10)
             ax.plot(mean_pred, frac_pos, marker='o', label=f'Class {c}')
             ax.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Reference')
@@ -149,6 +171,7 @@ class GarbageModelAnalyzer:
             ax.set_ylim(-0.05, 1.05)
             ax.grid(True)
             ax.legend(fontsize=8)
+        
         plt.tight_layout()
-        plt.savefig(os.path.join(self.performance_path, "calibration_curves.pdf"), dpi=80)
+        # plt.savefig(os.path.join(self.performance_path, "calibration_curves.pdf"), dpi=80)
         plt.show()
