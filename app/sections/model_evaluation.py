@@ -30,6 +30,21 @@ def get_available_models():
 CACHE_DIR = Path("app/sections/cached_data")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+def is_cache_valid(cache_file, model_path):
+    """Check if cache is newer than the model file"""
+    if not cache_file.exists():
+        return False
+    
+    if not Path(model_path).exists():
+        return False
+    
+    cache_time = cache_file.stat().st_mtime
+    model_time = Path(model_path).stat().st_mtime
+    
+    print(cache_file, model_path)
+    print(cache_time, model_time)
+
+    return cache_time > model_time  # Cache is valid if newer than model
 
 # State to hold both confusion matrices
 confusion_matrices_state = {
@@ -50,21 +65,25 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
     if not model_choice:
         return None, "Please select a model first", gr.update(visible=False)
     
-    # Check if we already have matrices for this model
+    # Get model path
+    models_dict = get_available_models()
+    model_path = models_dict.get(model_choice)
+    
+    # Check if we already have matrices for this model in memory
     if (confusion_matrices_state["model_choice"] == model_choice and 
         confusion_matrices_state["raw"] is not None and 
         confusion_matrices_state["normalized"] is not None):
         
-        # Return the appropriate one based on checkbox
         selected_matrix = confusion_matrices_state["normalized"] if show_normalized else confusion_matrices_state["raw"]
         matrix_type = "Normalized" if show_normalized else "Raw"
-        return selected_matrix, f"✅ {matrix_type} confusion matrix (from cache)", gr.update(visible=True, interactive=True)
+        return selected_matrix, f"✅ {matrix_type} confusion matrix (from memory)", gr.update(visible=True, interactive=True)
     
     # Check disk cache
     cache_file_raw = CACHE_DIR / f"cm_raw_{model_choice.replace(' ', '_')}.pkl"
     cache_file_norm = CACHE_DIR / f"cm_norm_{model_choice.replace(' ', '_')}.pkl"
     
-    if cache_file_raw.exists() and cache_file_norm.exists():
+    if (is_cache_valid(cache_file_raw, model_path) and 
+        is_cache_valid(cache_file_norm, model_path)):
         try:
             progress(0.2, desc="Loading from cache...")
             with open(cache_file_raw, 'rb') as f:
@@ -87,10 +106,6 @@ def generate_confusion_matrix(model_choice, show_normalized, progress=gr.Progres
     try:
         progress(0.1, desc="Loading model...")
         analyzer = GarbageModelAnalyzer()
-        
-        models_dict = get_available_models()
-        model_path = models_dict.get(model_choice)
-        
         analyzer.load_model(checkpoint_path=model_path)
         
         progress(0.3, desc="Setting up data...")
@@ -162,10 +177,14 @@ def generate_calibration_curves(model_choice, progress=gr.Progress()):
     if not model_choice:
         return None, "Please select a model first"
     
+    # Get model path
+    models_dict = get_available_models()
+    model_path = models_dict.get(model_choice)
+    
     # Check disk cache
     cache_file = CACHE_DIR / f"calib_{model_choice.replace(' ', '_')}.pkl"
     
-    if cache_file.exists():
+    if is_cache_valid(cache_file, model_path):
         try:
             progress(0.2, desc="Loading from cache...")
             with open(cache_file, 'rb') as f:
@@ -178,10 +197,6 @@ def generate_calibration_curves(model_choice, progress=gr.Progress()):
     try:
         progress(0.1, desc="Loading model...")
         analyzer = GarbageModelAnalyzer()
-        
-        models_dict = get_available_models()
-        model_path = models_dict.get(model_choice)
-        
         analyzer.load_model(checkpoint_path=model_path)
         
         progress(0.3, desc="Setting up data...")
