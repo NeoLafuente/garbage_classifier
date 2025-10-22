@@ -566,7 +566,7 @@ http = [
 [[package]]
 name = "garbage-classifier"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "codecarbon" },
     { name = "gdown" },
@@ -578,6 +578,7 @@ dependencies = [
     { name = "opencv-python" },
     { name = "pandas" },
     { name = "pyarrow" },
+    { name = "requests" },
     { name = "scikit-learn" },
     { name = "seaborn" },
     { name = "tables" },
@@ -586,6 +587,8 @@ dependencies = [
     { name = "torch" },
     { name = "torchinfo" },
     { name = "torchvision" },
+    { name = "tqdm" },
+    { name = "twine" },
 ]
 
 [package.dev-dependencies]
@@ -609,6 +612,7 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.11.0.86" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pyarrow", specifier = ">=21.0.0" },
+    { name = "requests", specifier = ">=2.31.0" },
     { name = "scikit-learn" },
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "tables", specifier = ">=3.10.2" },
@@ -617,6 +621,8 @@ requires-dist = [
     { name = "torch", specifier = ">=2.7.1" },
     { name = "torchinfo", specifier = ">=1.8.0" },
     { name = "torchvision", specifier = ">=0.22.1" },
+    { name = "tqdm", specifier = ">=4.66.0" },
+    { name = "twine", specifier = ">=6.2.0" },
 ]
 
 [package.metadata.requires-dev]
