@@ -23,6 +23,8 @@ dependencies = [
     "gradio>=5.49.1",
     "codecarbon>=3.0.7",
     "opencv-python>=4.11.0.86",
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
 ]
 authors = [
 	{name = "Melchor Lafuente"},
@@ -56,18 +58,23 @@ dev = [
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["source*", "app*"]
 exclude = [
     "data*",
-    "models*",
     "reports*",
     "notebooks*",
     "scripts*",
     "docs*",
     "*.egg-info",
 ]
+
+[tool.setuptools.package-data]
+"*" = ["*.ckpt"]
 
 [project.scripts]
 garbage-train = "source.train:main"
