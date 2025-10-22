@@ -84,13 +84,13 @@ Examples
 >>> # Import the classifier
 >>> from utils.custom_classes.GarbageClassifier import GarbageClassifier
 >>> from utils import config as cfg
->>> 
+>>>
 >>> # Load trained model
 >>> model = GarbageClassifier.load_from_checkpoint(
 ...     cfg.MODEL_PATH,
 ...     num_classes=cfg.NUM_CLASSES
 ... )
->>> 
+>>>
 >>> # Make prediction
 >>> from predict import predict_image
 >>> pred_class, pred_idx = predict_image("sample.jpg")

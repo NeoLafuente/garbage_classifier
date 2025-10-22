@@ -19,7 +19,49 @@ from source.utils import config as cfg
 
 
 class GarbageModelAnalyzer:
+    """
+    Analyzer class for evaluating and visualizing garbage classification model performance.
+
+    This class provides comprehensive tools for model evaluation including confusion matrices,
+    calibration curves, and misclassified sample visualization. It handles both model loading
+    and data module setup, with support for GPU acceleration.
+
+    Attributes
+    ----------
+    dataset_path : str
+        Path to the dataset folder containing images organized by class.
+    performance_path : str
+        Path to the directory where performance figures are saved.
+    device : torch.device
+        Computational device (CUDA if available, otherwise CPU).
+    df : pd.DataFrame or None
+        Metadata DataFrame containing dataset information.
+    model : GarbageClassifier or None
+        Loaded model instance for inference.
+    data_module : GarbageDataModule or None
+        Data module for dataset loading and preprocessing.
+    """
+
+
     def __init__(self, dataset_path=None, performance_path=None):
+        """
+        Initialize the GarbageModelAnalyzer instance.
+
+        Loads metadata from the dataset path and sets up paths for storing performance
+        figures. Detects CUDA availability for GPU acceleration.
+
+        Parameters
+        ----------
+        dataset_path : str, optional
+            Path to the dataset folder. Default is "../data/raw/sample_dataset".
+        performance_path : str, optional
+            Path to the directory for saving performance figures. Default is
+            "../reports/figures/performance/".
+
+        Returns
+        -------
+        None
+        """
         self.dataset_path = dataset_path or os.path.join("..", "data", "raw", "sample_dataset")
         self.performance_path = performance_path or '../reports/figures/performance/'
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,6 +77,28 @@ class GarbageModelAnalyzer:
         self.data_module = None
 
     def load_model(self, checkpoint_path=None, num_classes=None):
+        """
+        Load a trained GarbageClassifier model from a checkpoint.
+
+        Loads a model from a PyTorch Lightning checkpoint and moves it to the
+        specified device in evaluation mode.
+
+        Parameters
+        ----------
+        checkpoint_path : str, optional
+            Path to the model checkpoint file. If None, uses cfg.MODEL_PATH.
+            Default is None.
+        num_classes : int, optional
+            Number of output classes. If None, uses cfg.NUM_CLASSES. Default is None.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Model is automatically set to evaluation mode and moved to the configured device.
+        """
         checkpoint_path = checkpoint_path or cfg.MODEL_PATH
         num_classes = num_classes or cfg.NUM_CLASSES
         print("Loading model...")
@@ -43,6 +107,26 @@ class GarbageModelAnalyzer:
         print("Model loaded.")
 
     def setup_data(self, batch_size=32):
+        """
+        Set up the data module and filter metadata for available samples.
+
+        Initializes the GarbageDataModule and creates a filtered subset of metadata
+        containing only files present in the dataset directory.
+
+        Parameters
+        ----------
+        batch_size : int, optional
+            Batch size for data loading. Default is 32.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Creates self.df_subset containing only samples actually present in the dataset.
+        """
+
         self.data_module = GarbageDataModule(batch_size=batch_size)
         self.data_module.setup()
         file_names = []
@@ -52,6 +136,33 @@ class GarbageModelAnalyzer:
         self.df_subset = self.df[self.df['filename'].isin(file_names)].reset_index(drop=True).copy()
 
     def evaluate_loader(self, loader):
+        """
+        Evaluate model on a data loader and collect predictions and probabilities.
+
+        Iterates through a PyTorch DataLoader, performs inference, and collects
+        predictions, true labels, and confidence scores.
+
+        Parameters
+        ----------
+        loader : torch.utils.data.DataLoader
+            DataLoader containing batches of (images, labels).
+
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - all_preds : torch.Tensor
+                Predicted class indices.
+            - all_labels : torch.Tensor
+                True class labels.
+            - all_probs : np.ndarray
+                Confidence scores for each class (shape: [N, num_classes]).
+
+        Notes
+        -----
+        Model inference is performed without gradient computation for efficiency.
+        Probabilities are computed using softmax activation.
+        """
         all_preds, all_labels, all_probs = [], [], []
         with torch.no_grad():
             for xb, yb in loader:
@@ -69,6 +180,37 @@ class GarbageModelAnalyzer:
         return all_preds, all_labels, all_probs
 
     def plot_confusion_matrix(self, labels, preds, set_name="Train"):
+        """
+        Plot and save confusion matrices (raw and normalized) with class metrics.
+
+        Generates both raw and normalized confusion matrices, computes TP, FP, FN, TN
+        per class, and saves visualizations as PDF files.
+
+        Parameters
+        ----------
+        labels : array-like
+            True class labels.
+        preds : array-like
+            Predicted class labels.
+        set_name : str, optional
+            Name of the dataset split (e.g., "Train", "Val", "Test") for plot titles
+            and filenames. Default is "Train".
+
+        Returns
+        -------
+        None
+
+        Side Effects
+        -----------
+        - Saves confusion_mat_{set_name.lower()}.pdf to performance_path.
+        - Saves confusion_mat_{set_name.lower()}_norm.pdf to performance_path.
+        - Prints TP, FP, FN, TN statistics for each class.
+        - Displays matplotlib figures.
+
+        Notes
+        -----
+        Normalized confusion matrix divides by row sums to show percentages per class.
+        """
         num_classes = self.data_module.num_classes
         cm = confusion_matrix(labels, preds, labels=range(num_classes))
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=cfg.CLASS_NAMES)
@@ -94,6 +236,43 @@ class GarbageModelAnalyzer:
             print(f"Clase {i}: TP={TP[i]}, FP={FP[i]}, FN={FN[i]}, TN={TN[i]}")
 
     def plot_top_misclassified(self, df_set, y_true, y_pred, y_proba, N=10, filename=None):
+        """
+        Visualize the top N misclassified samples with lowest confidence.
+
+        Identifies misclassified samples, sorts them by confidence on the true class,
+        and displays the least confident (worst) predictions with their images.
+
+        Parameters
+        ----------
+        df_set : pd.DataFrame
+            DataFrame containing sample metadata with 'label' and 'filename' columns.
+        y_true : array-like
+            True class labels (can be integers or strings).
+        y_pred : array-like
+            Predicted class labels (integers).
+        y_proba : np.ndarray
+            Confidence scores matrix (shape: [N, num_classes]).
+        N : int, optional
+            Number of top misclassified samples to display. Default is 10.
+        filename : str, optional
+            Filename (without extension) to save the figure. If provided, saves as PDF
+            to performance_path. Default is None (no save).
+
+        Returns
+        -------
+        None
+
+        Side Effects
+        -----------
+        - Displays matplotlib figure with misclassified samples.
+        - Saves figure to performance_path/{filename}.pdf if filename is provided.
+
+        Notes
+        -----
+        Samples are sorted by confidence on the true class in ascending order, showing
+        the most uncertain misclassifications first. Images are loaded from
+        dataset_path/{label}/{filename} structure.
+        """
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
 
@@ -140,6 +319,35 @@ class GarbageModelAnalyzer:
         plt.show()
 
     def plot_calibration_curves(self, y_true, y_probs):
+        """
+        Plot calibration curves for all classes using one-vs-rest approach.
+
+        Generates calibration curves showing the relationship between predicted
+        probabilities and actual positive fractions for each class.
+
+        Parameters
+        ----------
+        y_true : array-like or torch.Tensor
+            True class labels (integers). Shape: [N,].
+        y_probs : np.ndarray or torch.Tensor
+            Predicted probability matrix. Shape: [N, num_classes].
+
+        Returns
+        -------
+        None
+
+        Side Effects
+        -----------
+        - Displays matplotlib figure with 2x3 grid of calibration curves.
+        - One subplot per class showing calibration curve and reference diagonal.
+
+        Notes
+        -----
+        Uses sklearn's calibration_curve function with 10 bins for each class.
+        Each class is converted to a binary classification problem (one-vs-rest).
+        Calibration curves below the diagonal indicate overconfident predictions.
+        Calibration curves above the diagonal indicate underconfident predictions.
+        """
         num_classes = self.data_module.num_classes
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         axes = axes.flatten()
@@ -148,9 +356,7 @@ class GarbageModelAnalyzer:
             y_true_np = y_true.cpu().numpy()
         else:
             y_true_np = y_true
-        
-        # y_probs ya debería estar en numpy (desde evaluate_loader)
-        # pero por si acaso:
+
         if isinstance(y_probs, torch.Tensor):
             y_probs = y_probs.cpu().numpy()
         
@@ -173,5 +379,4 @@ class GarbageModelAnalyzer:
             ax.legend(fontsize=8)
         
         plt.tight_layout()
-        # plt.savefig(os.path.join(self.performance_path, "calibration_curves.pdf"), dpi=80)
         plt.show()

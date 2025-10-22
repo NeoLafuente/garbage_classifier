@@ -38,34 +38,63 @@ def train_model(
     progress_callback=None
 ):
     """
-    Train the garbage classification model.
-    
+    Train the garbage classification model using PyTorch Lightning.
+
+    Orchestrates the complete training pipeline including data loading, model
+    initialization, training, and evaluation. Optionally tracks carbon emissions
+    during training and provides progress callbacks for UI integration.
+
     Parameters
     ----------
     batch_size : int, default=32
-        Batch size for training
+        Batch size for training and validation data loaders.
     lr : float, default=1e-3
-        Learning rate
+        Learning rate for the optimizer.
     max_epochs : int, optional
-        Maximum number of epochs. If None, uses cfg.MAX_EPOCHS
+        Maximum number of training epochs. If None, uses cfg.MAX_EPOCHS.
+        Default is None.
     model_save_path : str, optional
-        Path to save the trained model. If None, uses cfg.MODEL_PATH
+        Path to save the trained model checkpoint. If None, uses cfg.MODEL_PATH.
+        Default is None.
     loss_curves_dir : str, optional
-        Directory to save loss curves. If None, uses cfg.LOSS_CURVES_PATH
+        Directory to save loss curve visualizations. If None, uses cfg.LOSS_CURVES_PATH.
+        Default is None.
     track_carbon : bool, default=True
-        Whether to track carbon emissions during training
+        Whether to track carbon emissions during training using CodeCarbon.
     progress_callback : callable, optional
-        Callback function to report progress (for UI updates)
-        
+        Callback function to report training progress. Called with a message string
+        for UI updates. Default is None (no progress reporting).
+
     Returns
     -------
     dict
         Dictionary containing:
-        - 'trainer': PyTorch Lightning trainer
-        - 'model': Trained model
-        - 'data_module': Data module used
-        - 'emissions': Carbon emissions data (if tracked)
-        - 'metrics': Training and validation metrics
+        - 'trainer': pl.Trainer
+            PyTorch Lightning trainer instance.
+        - 'model': GarbageClassifier
+            Trained model instance.
+        - 'data_module': GarbageDataModule
+            Data module used for training.
+        - 'emissions': dict or None
+            Carbon emissions data with keys: 'emissions_kg', 'emissions_g',
+            'car_distance_km', 'car_distance_m', 'car_distance_formatted',
+            'duration_seconds'. None if track_carbon=False.
+        - 'metrics': dict
+            Training and validation metrics with keys: 'train_acc', 'val_acc',
+            'train_loss', 'val_loss'.
+
+    Raises
+    ------
+    Exception
+        Any exception during training is re-raised after stopping emissions tracker
+        if applicable.
+
+    Notes
+    -----
+    Carbon emissions are converted to equivalent car driving distance for
+    intuitive understanding. Model checkpoint is automatically saved to disk.
+    If progress_callback is provided, it receives status updates at key points
+    during training initialization and completion.
     """
     # Use config defaults if not provided
     if max_epochs is None:
@@ -179,7 +208,17 @@ def train_model(
 if __name__ == "__main__":
     """
     Main entry point for the training script when run from command line.
-    Uses default configuration from config module.
+
+    Executes the complete training pipeline using default configuration from
+    the config module. Displays final metrics and carbon emissions statistics.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
     """
     print("Starting training with default configuration...")
     result = train_model()

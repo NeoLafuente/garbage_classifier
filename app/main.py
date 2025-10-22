@@ -12,11 +12,9 @@ def get_emissions_path():
     """Get the path to the emissions CSV file"""
     return Path(cfg.MODEL_PATH).parent / "emissions.csv"
 
-
 def update_carbon_display():
     """Update the carbon footprint display"""
     return format_total_emissions_display(get_emissions_path())
-
 
 def main():
     with gr.Blocks(title="Garbage Classifier Demo") as demo:
