@@ -139,102 +139,105 @@ with an optional shareable link for remote access.</p>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">MODEL_PATH</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;emissions.csv&quot;</span>
 </span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_carbon_display</span><span class="p">():</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">    Update the carbon footprint display with latest emissions data.</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">    Returns</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">    -------</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">    str</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">        HTML-formatted string containing the total carbon emissions statistics,</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">        including CO₂ equivalent mass and car distance equivalent.</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    Notes</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    -----</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    This function reads the emissions CSV file and formats the cumulative</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    carbon footprint for display in the Gradio interface header.</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="k">return</span> <span class="n">format_total_emissions_display</span><span class="p">(</span><span class="n">get_emissions_path</span><span class="p">())</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">    Launch the main Gradio application interface.</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    Creates and configures a multi-tab Gradio interface with data exploration,</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="sd">    model training, and evaluation capabilities. Includes a persistent carbon</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    footprint counter in the header and custom CSS styling.</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    The interface includes:</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">    - Header with project title and carbon counter</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">    - Tab 1: Data Exploration (dataset visualization and analysis)</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    - Tab 2: Training Interface (model training with custom parameters)</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    - Tab 3: Model Evaluation (metrics visualization and inference)</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    Notes</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    -----</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    The application launches with `share=True`, which creates a public URL</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">    for remote access. Set to `False` for local-only access.</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">    Custom CSS is injected to style the carbon counter with a gradient</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">    background and appropriate sizing.</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">    See Also</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    --------</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    data_exploration_tab : Data exploration UI section</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">    model_training_tab : Model training UI section</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">    model_evaluation_tab : Model evaluation UI section</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>    <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Blocks</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Garbage Classifier Demo&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">demo</span><span class="p">:</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>        <span class="c1"># Header with carbon counter</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Row</span><span class="p">():</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>            <span class="n">gr</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;# 🗑️♻️ Garbage Classifier Interactive Demo&quot;</span><span class="p">)</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>            <span class="n">carbon_display</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">HTML</span><span class="p">(</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>                <span class="n">value</span><span class="o">=</span><span class="n">update_carbon_display</span><span class="p">(),</span> <span class="n">elem_id</span><span class="o">=</span><span class="s2">&quot;carbon-counter&quot;</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>            <span class="p">)</span>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>        <span class="c1"># Tabs</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tabs</span><span class="p">():</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Data Exploration&quot;</span><span class="p">):</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>                <span class="n">data_exploration_tab</span><span class="p">()</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Training Interface&quot;</span><span class="p">):</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>                <span class="n">train_outputs</span> <span class="o">=</span> <span class="n">model_training_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Model Evaluation&quot;</span><span class="p">):</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>                <span class="n">eval_outputs</span> <span class="o">=</span> <span class="n">model_evaluation_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>        <span class="c1"># Add custom CSS for the carbon counter</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>        <span class="n">demo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>            <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>            <span class="n">js</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="s2">            function() {</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="s2">                const style = document.createElement(&#39;style&#39;);</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="s2">                style.textContent = `</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="s2">                    #carbon-counter {</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="s2">                        color: white !important;</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="s2">                        font-size: 1.0em;</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="s2">                        font-weight: bold;</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="s2">                        padding: 12px 20px;</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="s2">                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="s2">                        border-radius: 8px;</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="s2">                        margin-left: auto;</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="s2">                        min-width: 500px;</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="s2">                        max-width: 800px;</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="s2">                    }</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="s2">                    #carbon-counter * {</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="s2">                        color: white !important;</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_carbon_display</span><span class="p">():</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">    Update the carbon footprint display with latest emissions data.</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="sd">    Returns</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">    -------</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">    str</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">        HTML-formatted string containing the total carbon emissions statistics,</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">        including CO₂ equivalent mass and car distance equivalent.</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    Notes</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    -----</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    This function reads the emissions CSV file and formats the cumulative</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">    carbon footprint for display in the Gradio interface header.</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="k">return</span> <span class="n">format_total_emissions_display</span><span class="p">(</span><span class="n">get_emissions_path</span><span class="p">())</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    Launch the main Gradio application interface.</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    Creates and configures a multi-tab Gradio interface with data exploration,</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    model training, and evaluation capabilities. Includes a persistent carbon</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    footprint counter in the header and custom CSS styling.</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">    The interface includes:</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    - Header with project title and carbon counter</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    - Tab 1: Data Exploration (dataset visualization and analysis)</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    - Tab 2: Training Interface (model training with custom parameters)</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    - Tab 3: Model Evaluation (metrics visualization and inference)</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    Notes</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">    -----</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">    The application launches with `share=True`, which creates a public URL</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">    for remote access. Set to `False` for local-only access.</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    Custom CSS is injected to style the carbon counter with a gradient</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">    background and appropriate sizing.</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    See Also</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">    --------</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">    data_exploration_tab : Data exploration UI section</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="sd">    model_training_tab : Model training UI section</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    model_evaluation_tab : Model evaluation UI section</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>    <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Blocks</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Garbage Classifier Demo&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">demo</span><span class="p">:</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="c1"># Header with carbon counter</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Row</span><span class="p">():</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>            <span class="n">gr</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;# 🗑️♻️ Garbage Classifier Interactive Demo&quot;</span><span class="p">)</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>            <span class="n">carbon_display</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">HTML</span><span class="p">(</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>                <span class="n">value</span><span class="o">=</span><span class="n">update_carbon_display</span><span class="p">(),</span> <span class="n">elem_id</span><span class="o">=</span><span class="s2">&quot;carbon-counter&quot;</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>            <span class="p">)</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>        <span class="c1"># Tabs</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tabs</span><span class="p">():</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Data Exploration&quot;</span><span class="p">):</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>                <span class="n">data_exploration_tab</span><span class="p">()</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Training Interface&quot;</span><span class="p">):</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>                <span class="n">model_training_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Model Evaluation&quot;</span><span class="p">):</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>                <span class="n">model_evaluation_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>        <span class="c1"># Add custom CSS for the carbon counter</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>        <span class="n">demo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>            <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>            <span class="n">js</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="s2">            function() {</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="s2">                const style = document.createElement(&#39;style&#39;);</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="s2">                style.textContent = `</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="s2">                    #carbon-counter {</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="s2">                        color: white !important;</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="s2">                        font-size: 1.0em;</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="s2">                        font-weight: bold;</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="s2">                        padding: 12px 20px;</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="s2">                        background: </span><span class="se">\</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="s2">                            linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="s2">                        border-radius: 8px;</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="s2">                        margin-left: auto;</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="s2">                        min-width: 500px;</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="s2">                        max-width: 800px;</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="s2">                    }</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="s2">                `;</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="s2">                document.head.appendChild(style);</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="s2">            }</span>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>        <span class="p">)</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="n">demo</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">share</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="s2">                    #carbon-counter * {</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="s2">                        color: white !important;</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="s2">                    }</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="s2">                `;</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="s2">                document.head.appendChild(style);</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="s2">            }</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>        <span class="p">)</span>
 </span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>    <span class="n">main</span><span class="p">()</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>    <span class="n">demo</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">share</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="n">main</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -295,22 +298,22 @@ checkpoint, as defined in the configuration.</p>
 
     </div>
     <a class="headerlink" href="#update_carbon_display"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="update_carbon_display-55"><a href="#update_carbon_display-55"><span class="linenos">55</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_carbon_display</span><span class="p">():</span>
-</span><span id="update_carbon_display-56"><a href="#update_carbon_display-56"><span class="linenos">56</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="update_carbon_display-57"><a href="#update_carbon_display-57"><span class="linenos">57</span></a><span class="sd">    Update the carbon footprint display with latest emissions data.</span>
-</span><span id="update_carbon_display-58"><a href="#update_carbon_display-58"><span class="linenos">58</span></a>
-</span><span id="update_carbon_display-59"><a href="#update_carbon_display-59"><span class="linenos">59</span></a><span class="sd">    Returns</span>
-</span><span id="update_carbon_display-60"><a href="#update_carbon_display-60"><span class="linenos">60</span></a><span class="sd">    -------</span>
-</span><span id="update_carbon_display-61"><a href="#update_carbon_display-61"><span class="linenos">61</span></a><span class="sd">    str</span>
-</span><span id="update_carbon_display-62"><a href="#update_carbon_display-62"><span class="linenos">62</span></a><span class="sd">        HTML-formatted string containing the total carbon emissions statistics,</span>
-</span><span id="update_carbon_display-63"><a href="#update_carbon_display-63"><span class="linenos">63</span></a><span class="sd">        including CO₂ equivalent mass and car distance equivalent.</span>
-</span><span id="update_carbon_display-64"><a href="#update_carbon_display-64"><span class="linenos">64</span></a>
-</span><span id="update_carbon_display-65"><a href="#update_carbon_display-65"><span class="linenos">65</span></a><span class="sd">    Notes</span>
-</span><span id="update_carbon_display-66"><a href="#update_carbon_display-66"><span class="linenos">66</span></a><span class="sd">    -----</span>
-</span><span id="update_carbon_display-67"><a href="#update_carbon_display-67"><span class="linenos">67</span></a><span class="sd">    This function reads the emissions CSV file and formats the cumulative</span>
-</span><span id="update_carbon_display-68"><a href="#update_carbon_display-68"><span class="linenos">68</span></a><span class="sd">    carbon footprint for display in the Gradio interface header.</span>
-</span><span id="update_carbon_display-69"><a href="#update_carbon_display-69"><span class="linenos">69</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="update_carbon_display-70"><a href="#update_carbon_display-70"><span class="linenos">70</span></a>    <span class="k">return</span> <span class="n">format_total_emissions_display</span><span class="p">(</span><span class="n">get_emissions_path</span><span class="p">())</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="update_carbon_display-56"><a href="#update_carbon_display-56"><span class="linenos">56</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_carbon_display</span><span class="p">():</span>
+</span><span id="update_carbon_display-57"><a href="#update_carbon_display-57"><span class="linenos">57</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="update_carbon_display-58"><a href="#update_carbon_display-58"><span class="linenos">58</span></a><span class="sd">    Update the carbon footprint display with latest emissions data.</span>
+</span><span id="update_carbon_display-59"><a href="#update_carbon_display-59"><span class="linenos">59</span></a>
+</span><span id="update_carbon_display-60"><a href="#update_carbon_display-60"><span class="linenos">60</span></a><span class="sd">    Returns</span>
+</span><span id="update_carbon_display-61"><a href="#update_carbon_display-61"><span class="linenos">61</span></a><span class="sd">    -------</span>
+</span><span id="update_carbon_display-62"><a href="#update_carbon_display-62"><span class="linenos">62</span></a><span class="sd">    str</span>
+</span><span id="update_carbon_display-63"><a href="#update_carbon_display-63"><span class="linenos">63</span></a><span class="sd">        HTML-formatted string containing the total carbon emissions statistics,</span>
+</span><span id="update_carbon_display-64"><a href="#update_carbon_display-64"><span class="linenos">64</span></a><span class="sd">        including CO₂ equivalent mass and car distance equivalent.</span>
+</span><span id="update_carbon_display-65"><a href="#update_carbon_display-65"><span class="linenos">65</span></a>
+</span><span id="update_carbon_display-66"><a href="#update_carbon_display-66"><span class="linenos">66</span></a><span class="sd">    Notes</span>
+</span><span id="update_carbon_display-67"><a href="#update_carbon_display-67"><span class="linenos">67</span></a><span class="sd">    -----</span>
+</span><span id="update_carbon_display-68"><a href="#update_carbon_display-68"><span class="linenos">68</span></a><span class="sd">    This function reads the emissions CSV file and formats the cumulative</span>
+</span><span id="update_carbon_display-69"><a href="#update_carbon_display-69"><span class="linenos">69</span></a><span class="sd">    carbon footprint for display in the Gradio interface header.</span>
+</span><span id="update_carbon_display-70"><a href="#update_carbon_display-70"><span class="linenos">70</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="update_carbon_display-71"><a href="#update_carbon_display-71"><span class="linenos">71</span></a>    <span class="k">return</span> <span class="n">format_total_emissions_display</span><span class="p">(</span><span class="n">get_emissions_path</span><span class="p">())</span>
 </span></pre></div>
 
 
@@ -342,81 +345,82 @@ carbon footprint for display in the Gradio interface header.</p>
 
     </div>
     <a class="headerlink" href="#main"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="main-72"><a href="#main-72"><span class="linenos"> 72</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="main-73"><a href="#main-73"><span class="linenos"> 73</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="main-74"><a href="#main-74"><span class="linenos"> 74</span></a><span class="sd">    Launch the main Gradio application interface.</span>
-</span><span id="main-75"><a href="#main-75"><span class="linenos"> 75</span></a>
-</span><span id="main-76"><a href="#main-76"><span class="linenos"> 76</span></a><span class="sd">    Creates and configures a multi-tab Gradio interface with data exploration,</span>
-</span><span id="main-77"><a href="#main-77"><span class="linenos"> 77</span></a><span class="sd">    model training, and evaluation capabilities. Includes a persistent carbon</span>
-</span><span id="main-78"><a href="#main-78"><span class="linenos"> 78</span></a><span class="sd">    footprint counter in the header and custom CSS styling.</span>
-</span><span id="main-79"><a href="#main-79"><span class="linenos"> 79</span></a>
-</span><span id="main-80"><a href="#main-80"><span class="linenos"> 80</span></a><span class="sd">    The interface includes:</span>
-</span><span id="main-81"><a href="#main-81"><span class="linenos"> 81</span></a><span class="sd">    - Header with project title and carbon counter</span>
-</span><span id="main-82"><a href="#main-82"><span class="linenos"> 82</span></a><span class="sd">    - Tab 1: Data Exploration (dataset visualization and analysis)</span>
-</span><span id="main-83"><a href="#main-83"><span class="linenos"> 83</span></a><span class="sd">    - Tab 2: Training Interface (model training with custom parameters)</span>
-</span><span id="main-84"><a href="#main-84"><span class="linenos"> 84</span></a><span class="sd">    - Tab 3: Model Evaluation (metrics visualization and inference)</span>
-</span><span id="main-85"><a href="#main-85"><span class="linenos"> 85</span></a>
-</span><span id="main-86"><a href="#main-86"><span class="linenos"> 86</span></a><span class="sd">    Notes</span>
-</span><span id="main-87"><a href="#main-87"><span class="linenos"> 87</span></a><span class="sd">    -----</span>
-</span><span id="main-88"><a href="#main-88"><span class="linenos"> 88</span></a><span class="sd">    The application launches with `share=True`, which creates a public URL</span>
-</span><span id="main-89"><a href="#main-89"><span class="linenos"> 89</span></a><span class="sd">    for remote access. Set to `False` for local-only access.</span>
-</span><span id="main-90"><a href="#main-90"><span class="linenos"> 90</span></a>
-</span><span id="main-91"><a href="#main-91"><span class="linenos"> 91</span></a><span class="sd">    Custom CSS is injected to style the carbon counter with a gradient</span>
-</span><span id="main-92"><a href="#main-92"><span class="linenos"> 92</span></a><span class="sd">    background and appropriate sizing.</span>
-</span><span id="main-93"><a href="#main-93"><span class="linenos"> 93</span></a>
-</span><span id="main-94"><a href="#main-94"><span class="linenos"> 94</span></a><span class="sd">    See Also</span>
-</span><span id="main-95"><a href="#main-95"><span class="linenos"> 95</span></a><span class="sd">    --------</span>
-</span><span id="main-96"><a href="#main-96"><span class="linenos"> 96</span></a><span class="sd">    data_exploration_tab : Data exploration UI section</span>
-</span><span id="main-97"><a href="#main-97"><span class="linenos"> 97</span></a><span class="sd">    model_training_tab : Model training UI section</span>
-</span><span id="main-98"><a href="#main-98"><span class="linenos"> 98</span></a><span class="sd">    model_evaluation_tab : Model evaluation UI section</span>
-</span><span id="main-99"><a href="#main-99"><span class="linenos"> 99</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="main-100"><a href="#main-100"><span class="linenos">100</span></a>    <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Blocks</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Garbage Classifier Demo&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">demo</span><span class="p">:</span>
-</span><span id="main-101"><a href="#main-101"><span class="linenos">101</span></a>        <span class="c1"># Header with carbon counter</span>
-</span><span id="main-102"><a href="#main-102"><span class="linenos">102</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Row</span><span class="p">():</span>
-</span><span id="main-103"><a href="#main-103"><span class="linenos">103</span></a>            <span class="n">gr</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;# 🗑️♻️ Garbage Classifier Interactive Demo&quot;</span><span class="p">)</span>
-</span><span id="main-104"><a href="#main-104"><span class="linenos">104</span></a>            <span class="n">carbon_display</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">HTML</span><span class="p">(</span>
-</span><span id="main-105"><a href="#main-105"><span class="linenos">105</span></a>                <span class="n">value</span><span class="o">=</span><span class="n">update_carbon_display</span><span class="p">(),</span> <span class="n">elem_id</span><span class="o">=</span><span class="s2">&quot;carbon-counter&quot;</span>
-</span><span id="main-106"><a href="#main-106"><span class="linenos">106</span></a>            <span class="p">)</span>
-</span><span id="main-107"><a href="#main-107"><span class="linenos">107</span></a>
-</span><span id="main-108"><a href="#main-108"><span class="linenos">108</span></a>        <span class="c1"># Tabs</span>
-</span><span id="main-109"><a href="#main-109"><span class="linenos">109</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tabs</span><span class="p">():</span>
-</span><span id="main-110"><a href="#main-110"><span class="linenos">110</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Data Exploration&quot;</span><span class="p">):</span>
-</span><span id="main-111"><a href="#main-111"><span class="linenos">111</span></a>                <span class="n">data_exploration_tab</span><span class="p">()</span>
-</span><span id="main-112"><a href="#main-112"><span class="linenos">112</span></a>
-</span><span id="main-113"><a href="#main-113"><span class="linenos">113</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Training Interface&quot;</span><span class="p">):</span>
-</span><span id="main-114"><a href="#main-114"><span class="linenos">114</span></a>                <span class="n">train_outputs</span> <span class="o">=</span> <span class="n">model_training_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
-</span><span id="main-115"><a href="#main-115"><span class="linenos">115</span></a>
-</span><span id="main-116"><a href="#main-116"><span class="linenos">116</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Model Evaluation&quot;</span><span class="p">):</span>
-</span><span id="main-117"><a href="#main-117"><span class="linenos">117</span></a>                <span class="n">eval_outputs</span> <span class="o">=</span> <span class="n">model_evaluation_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
-</span><span id="main-118"><a href="#main-118"><span class="linenos">118</span></a>
-</span><span id="main-119"><a href="#main-119"><span class="linenos">119</span></a>        <span class="c1"># Add custom CSS for the carbon counter</span>
-</span><span id="main-120"><a href="#main-120"><span class="linenos">120</span></a>        <span class="n">demo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-</span><span id="main-121"><a href="#main-121"><span class="linenos">121</span></a>            <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="main-122"><a href="#main-122"><span class="linenos">122</span></a>            <span class="n">js</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
-</span><span id="main-123"><a href="#main-123"><span class="linenos">123</span></a><span class="s2">            function() {</span>
-</span><span id="main-124"><a href="#main-124"><span class="linenos">124</span></a><span class="s2">                const style = document.createElement(&#39;style&#39;);</span>
-</span><span id="main-125"><a href="#main-125"><span class="linenos">125</span></a><span class="s2">                style.textContent = `</span>
-</span><span id="main-126"><a href="#main-126"><span class="linenos">126</span></a><span class="s2">                    #carbon-counter {</span>
-</span><span id="main-127"><a href="#main-127"><span class="linenos">127</span></a><span class="s2">                        color: white !important;</span>
-</span><span id="main-128"><a href="#main-128"><span class="linenos">128</span></a><span class="s2">                        font-size: 1.0em;</span>
-</span><span id="main-129"><a href="#main-129"><span class="linenos">129</span></a><span class="s2">                        font-weight: bold;</span>
-</span><span id="main-130"><a href="#main-130"><span class="linenos">130</span></a><span class="s2">                        padding: 12px 20px;</span>
-</span><span id="main-131"><a href="#main-131"><span class="linenos">131</span></a><span class="s2">                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span>
-</span><span id="main-132"><a href="#main-132"><span class="linenos">132</span></a><span class="s2">                        border-radius: 8px;</span>
-</span><span id="main-133"><a href="#main-133"><span class="linenos">133</span></a><span class="s2">                        margin-left: auto;</span>
-</span><span id="main-134"><a href="#main-134"><span class="linenos">134</span></a><span class="s2">                        min-width: 500px;</span>
-</span><span id="main-135"><a href="#main-135"><span class="linenos">135</span></a><span class="s2">                        max-width: 800px;</span>
-</span><span id="main-136"><a href="#main-136"><span class="linenos">136</span></a><span class="s2">                    }</span>
-</span><span id="main-137"><a href="#main-137"><span class="linenos">137</span></a><span class="s2">                    #carbon-counter * {</span>
-</span><span id="main-138"><a href="#main-138"><span class="linenos">138</span></a><span class="s2">                        color: white !important;</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="main-74"><a href="#main-74"><span class="linenos"> 74</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span id="main-75"><a href="#main-75"><span class="linenos"> 75</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="main-76"><a href="#main-76"><span class="linenos"> 76</span></a><span class="sd">    Launch the main Gradio application interface.</span>
+</span><span id="main-77"><a href="#main-77"><span class="linenos"> 77</span></a>
+</span><span id="main-78"><a href="#main-78"><span class="linenos"> 78</span></a><span class="sd">    Creates and configures a multi-tab Gradio interface with data exploration,</span>
+</span><span id="main-79"><a href="#main-79"><span class="linenos"> 79</span></a><span class="sd">    model training, and evaluation capabilities. Includes a persistent carbon</span>
+</span><span id="main-80"><a href="#main-80"><span class="linenos"> 80</span></a><span class="sd">    footprint counter in the header and custom CSS styling.</span>
+</span><span id="main-81"><a href="#main-81"><span class="linenos"> 81</span></a>
+</span><span id="main-82"><a href="#main-82"><span class="linenos"> 82</span></a><span class="sd">    The interface includes:</span>
+</span><span id="main-83"><a href="#main-83"><span class="linenos"> 83</span></a><span class="sd">    - Header with project title and carbon counter</span>
+</span><span id="main-84"><a href="#main-84"><span class="linenos"> 84</span></a><span class="sd">    - Tab 1: Data Exploration (dataset visualization and analysis)</span>
+</span><span id="main-85"><a href="#main-85"><span class="linenos"> 85</span></a><span class="sd">    - Tab 2: Training Interface (model training with custom parameters)</span>
+</span><span id="main-86"><a href="#main-86"><span class="linenos"> 86</span></a><span class="sd">    - Tab 3: Model Evaluation (metrics visualization and inference)</span>
+</span><span id="main-87"><a href="#main-87"><span class="linenos"> 87</span></a>
+</span><span id="main-88"><a href="#main-88"><span class="linenos"> 88</span></a><span class="sd">    Notes</span>
+</span><span id="main-89"><a href="#main-89"><span class="linenos"> 89</span></a><span class="sd">    -----</span>
+</span><span id="main-90"><a href="#main-90"><span class="linenos"> 90</span></a><span class="sd">    The application launches with `share=True`, which creates a public URL</span>
+</span><span id="main-91"><a href="#main-91"><span class="linenos"> 91</span></a><span class="sd">    for remote access. Set to `False` for local-only access.</span>
+</span><span id="main-92"><a href="#main-92"><span class="linenos"> 92</span></a>
+</span><span id="main-93"><a href="#main-93"><span class="linenos"> 93</span></a><span class="sd">    Custom CSS is injected to style the carbon counter with a gradient</span>
+</span><span id="main-94"><a href="#main-94"><span class="linenos"> 94</span></a><span class="sd">    background and appropriate sizing.</span>
+</span><span id="main-95"><a href="#main-95"><span class="linenos"> 95</span></a>
+</span><span id="main-96"><a href="#main-96"><span class="linenos"> 96</span></a><span class="sd">    See Also</span>
+</span><span id="main-97"><a href="#main-97"><span class="linenos"> 97</span></a><span class="sd">    --------</span>
+</span><span id="main-98"><a href="#main-98"><span class="linenos"> 98</span></a><span class="sd">    data_exploration_tab : Data exploration UI section</span>
+</span><span id="main-99"><a href="#main-99"><span class="linenos"> 99</span></a><span class="sd">    model_training_tab : Model training UI section</span>
+</span><span id="main-100"><a href="#main-100"><span class="linenos">100</span></a><span class="sd">    model_evaluation_tab : Model evaluation UI section</span>
+</span><span id="main-101"><a href="#main-101"><span class="linenos">101</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="main-102"><a href="#main-102"><span class="linenos">102</span></a>    <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Blocks</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Garbage Classifier Demo&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">demo</span><span class="p">:</span>
+</span><span id="main-103"><a href="#main-103"><span class="linenos">103</span></a>        <span class="c1"># Header with carbon counter</span>
+</span><span id="main-104"><a href="#main-104"><span class="linenos">104</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Row</span><span class="p">():</span>
+</span><span id="main-105"><a href="#main-105"><span class="linenos">105</span></a>            <span class="n">gr</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;# 🗑️♻️ Garbage Classifier Interactive Demo&quot;</span><span class="p">)</span>
+</span><span id="main-106"><a href="#main-106"><span class="linenos">106</span></a>            <span class="n">carbon_display</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">HTML</span><span class="p">(</span>
+</span><span id="main-107"><a href="#main-107"><span class="linenos">107</span></a>                <span class="n">value</span><span class="o">=</span><span class="n">update_carbon_display</span><span class="p">(),</span> <span class="n">elem_id</span><span class="o">=</span><span class="s2">&quot;carbon-counter&quot;</span>
+</span><span id="main-108"><a href="#main-108"><span class="linenos">108</span></a>            <span class="p">)</span>
+</span><span id="main-109"><a href="#main-109"><span class="linenos">109</span></a>
+</span><span id="main-110"><a href="#main-110"><span class="linenos">110</span></a>        <span class="c1"># Tabs</span>
+</span><span id="main-111"><a href="#main-111"><span class="linenos">111</span></a>        <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tabs</span><span class="p">():</span>
+</span><span id="main-112"><a href="#main-112"><span class="linenos">112</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Data Exploration&quot;</span><span class="p">):</span>
+</span><span id="main-113"><a href="#main-113"><span class="linenos">113</span></a>                <span class="n">data_exploration_tab</span><span class="p">()</span>
+</span><span id="main-114"><a href="#main-114"><span class="linenos">114</span></a>
+</span><span id="main-115"><a href="#main-115"><span class="linenos">115</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Training Interface&quot;</span><span class="p">):</span>
+</span><span id="main-116"><a href="#main-116"><span class="linenos">116</span></a>                <span class="n">model_training_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
+</span><span id="main-117"><a href="#main-117"><span class="linenos">117</span></a>
+</span><span id="main-118"><a href="#main-118"><span class="linenos">118</span></a>            <span class="k">with</span> <span class="n">gr</span><span class="o">.</span><span class="n">Tab</span><span class="p">(</span><span class="s2">&quot;Model Evaluation&quot;</span><span class="p">):</span>
+</span><span id="main-119"><a href="#main-119"><span class="linenos">119</span></a>                <span class="n">model_evaluation_tab</span><span class="p">(</span><span class="n">carbon_display</span><span class="p">)</span>
+</span><span id="main-120"><a href="#main-120"><span class="linenos">120</span></a>
+</span><span id="main-121"><a href="#main-121"><span class="linenos">121</span></a>        <span class="c1"># Add custom CSS for the carbon counter</span>
+</span><span id="main-122"><a href="#main-122"><span class="linenos">122</span></a>        <span class="n">demo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+</span><span id="main-123"><a href="#main-123"><span class="linenos">123</span></a>            <span class="n">fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="main-124"><a href="#main-124"><span class="linenos">124</span></a>            <span class="n">js</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
+</span><span id="main-125"><a href="#main-125"><span class="linenos">125</span></a><span class="s2">            function() {</span>
+</span><span id="main-126"><a href="#main-126"><span class="linenos">126</span></a><span class="s2">                const style = document.createElement(&#39;style&#39;);</span>
+</span><span id="main-127"><a href="#main-127"><span class="linenos">127</span></a><span class="s2">                style.textContent = `</span>
+</span><span id="main-128"><a href="#main-128"><span class="linenos">128</span></a><span class="s2">                    #carbon-counter {</span>
+</span><span id="main-129"><a href="#main-129"><span class="linenos">129</span></a><span class="s2">                        color: white !important;</span>
+</span><span id="main-130"><a href="#main-130"><span class="linenos">130</span></a><span class="s2">                        font-size: 1.0em;</span>
+</span><span id="main-131"><a href="#main-131"><span class="linenos">131</span></a><span class="s2">                        font-weight: bold;</span>
+</span><span id="main-132"><a href="#main-132"><span class="linenos">132</span></a><span class="s2">                        padding: 12px 20px;</span>
+</span><span id="main-133"><a href="#main-133"><span class="linenos">133</span></a><span class="s2">                        background: </span><span class="se">\</span>
+</span><span id="main-134"><a href="#main-134"><span class="linenos">134</span></a><span class="s2">                            linear-gradient(135deg, #667eea 0%, #764ba2 100%);</span>
+</span><span id="main-135"><a href="#main-135"><span class="linenos">135</span></a><span class="s2">                        border-radius: 8px;</span>
+</span><span id="main-136"><a href="#main-136"><span class="linenos">136</span></a><span class="s2">                        margin-left: auto;</span>
+</span><span id="main-137"><a href="#main-137"><span class="linenos">137</span></a><span class="s2">                        min-width: 500px;</span>
+</span><span id="main-138"><a href="#main-138"><span class="linenos">138</span></a><span class="s2">                        max-width: 800px;</span>
 </span><span id="main-139"><a href="#main-139"><span class="linenos">139</span></a><span class="s2">                    }</span>
-</span><span id="main-140"><a href="#main-140"><span class="linenos">140</span></a><span class="s2">                `;</span>
-</span><span id="main-141"><a href="#main-141"><span class="linenos">141</span></a><span class="s2">                document.head.appendChild(style);</span>
-</span><span id="main-142"><a href="#main-142"><span class="linenos">142</span></a><span class="s2">            }</span>
-</span><span id="main-143"><a href="#main-143"><span class="linenos">143</span></a><span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
-</span><span id="main-144"><a href="#main-144"><span class="linenos">144</span></a>        <span class="p">)</span>
-</span><span id="main-145"><a href="#main-145"><span class="linenos">145</span></a>
-</span><span id="main-146"><a href="#main-146"><span class="linenos">146</span></a>    <span class="n">demo</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">share</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="main-140"><a href="#main-140"><span class="linenos">140</span></a><span class="s2">                    #carbon-counter * {</span>
+</span><span id="main-141"><a href="#main-141"><span class="linenos">141</span></a><span class="s2">                        color: white !important;</span>
+</span><span id="main-142"><a href="#main-142"><span class="linenos">142</span></a><span class="s2">                    }</span>
+</span><span id="main-143"><a href="#main-143"><span class="linenos">143</span></a><span class="s2">                `;</span>
+</span><span id="main-144"><a href="#main-144"><span class="linenos">144</span></a><span class="s2">                document.head.appendChild(style);</span>
+</span><span id="main-145"><a href="#main-145"><span class="linenos">145</span></a><span class="s2">            }</span>
+</span><span id="main-146"><a href="#main-146"><span class="linenos">146</span></a><span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span>
+</span><span id="main-147"><a href="#main-147"><span class="linenos">147</span></a>        <span class="p">)</span>
+</span><span id="main-148"><a href="#main-148"><span class="linenos">148</span></a>
+</span><span id="main-149"><a href="#main-149"><span class="linenos">149</span></a>    <span class="n">demo</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">share</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></pre></div>
 
 
