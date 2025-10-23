@@ -59,7 +59,9 @@ if not found locally.
 """
 __docformat__ = "numpy"
 
+import os
 from pathlib import Path
+import zipfile
 import requests
 from tqdm import tqdm
 from platformdirs import user_data_dir
@@ -72,34 +74,33 @@ APP_NAME = "garbage_classifier"
 # ============================================
 # Project Structure
 # ============================================
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = PROJECT_ROOT / "data"
-MODELS_DIR = PROJECT_ROOT / "models"
+DATA_DIR = "data"
+MODELS_DIR = "models"
 
 # ============================================
 # Data Paths
 # ============================================
-RAW_DATA_DIR = DATA_DIR / "raw"
-DATASET_PATH = RAW_DATA_DIR / "Garbage_Dataset_Classification" / "images"
-SAMPLE_IMG_PATH = RAW_DATA_DIR / "sample.jpg"
-SAMPLE_DATASET_PATH = RAW_DATA_DIR / "sample_dataset"
+RAW_DATA_DIR = f"{DATA_DIR}/raw"
+DATASET_PATH = f"{RAW_DATA_DIR}/Garbage_Dataset_Classification/images"
+SAMPLE_IMG_PATH = f"{RAW_DATA_DIR}/sample.jpg"
+SAMPLE_DATASET_PATH = f"{RAW_DATA_DIR}/sample_dataset"
 # ============================================
 # Gradio Paths
 # ============================================
-APP_DIR = PROJECT_ROOT / "app"
-SECTIONS_DIR = APP_DIR / "sections"
-CACHED_DATA_DIR = SECTIONS_DIR / "cached_data"
+APP_DIR = "app"
+SECTIONS_DIR = f"{APP_DIR}/sections"
+CACHED_DATA_DIR = f"{SECTIONS_DIR}/cached_data"
 
 # ============================================
 # Model Paths
 # ============================================
-WEIGHTS_DIR = MODELS_DIR / "weights"
-BEST_MODEL_DIR = MODELS_DIR / "best"
-PERFORMANCE_DIR = MODELS_DIR / "performance"
-LOSS_CURVES_PATH = PERFORMANCE_DIR / "loss_curves"
+WEIGHTS_DIR = f"{MODELS_DIR}/weights"
+BEST_MODEL_DIR = f"{MODELS_DIR}/best"
+PERFORMANCE_DIR = f"{MODELS_DIR}/performance"
+LOSS_CURVES_PATH = f"{PERFORMANCE_DIR}/loss_curves"
 
 MODEL_FILENAME = "model_resnet18_garbage.ckpt"
-MODEL_PATH = BEST_MODEL_DIR / MODEL_FILENAME
+MODEL_PATH = f"{WEIGHTS_DIR}/{MODEL_FILENAME}"
 EMISSIONS_FILE = "emissions.csv"
 
 # ============================================
@@ -112,6 +113,11 @@ MODEL_VERSION = "v0.1.0"
 MODEL_URL = (
     f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/"
     f"releases/download/{MODEL_VERSION}/{MODEL_FILENAME}"
+)
+
+MODEL_PERFORMANCE_URL = (
+    f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/"
+    "releases/download/v0.1.4/performance.zip"
 )
 
 # ============================================
@@ -225,6 +231,7 @@ def ensure_model_downloaded() -> Path:
     >>> model = GarbageClassifier.load_from_checkpoint(model_path)
     """
     model_path = Path(f"{get_valid_dir(BEST_MODEL_DIR)}/{MODEL_FILENAME}")
+    performance_path = model_path.parent / "performance.zip"
 
     if not model_path.exists():
         print("🔍 Pretrained model not found locally.")
@@ -232,6 +239,10 @@ def ensure_model_downloaded() -> Path:
 
         try:
             download_file(MODEL_URL, model_path)
+            download_file(MODEL_PERFORMANCE_URL, performance_path)
+            with zipfile.ZipFile(performance_path, "r") as zip_ref:
+                zip_ref.extractall(performance_path.parent)
+            os.remove(performance_path)
         except requests.HTTPError as e:
             print(f"\n❌ Failed to download model: {e}")
             raise FileNotFoundError(f"Model not found: {model_path}") from e
@@ -243,6 +254,20 @@ def ensure_model_downloaded() -> Path:
             raise
     else:
         print(f"✅ Model found: {model_path}")
+
+    emission_file_path = model_path.parent / "emissions.csv"
+    if not emission_file_path.exists():
+        with open(emission_file_path, 'w') as file:
+            header = (
+                "timestamp,project_name,run_id,experiment_id,duration,"
+                "emissions,emissions_rate,cpu_power,gpu_power,ram_power,"
+                "cpu_energy,gpu_energy,ram_energy,energy_consumed,"
+                "country_name,country_iso_code,region,cloud_provider,"
+                "cloud_region,os,python_version,codecarbon_version,"
+                "cpu_count,cpu_model,gpu_count,gpu_model,longitude,latitude,"
+                "ram_total_size,tracking_mode,on_cloud,pue"
+            )
+            file.write(header)
 
     return model_path
 

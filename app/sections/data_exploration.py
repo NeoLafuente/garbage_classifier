@@ -160,8 +160,10 @@ def data_exploration_tab():
         enhanced visualization of class features.
         """
         fig = eda.plot_mean_images_per_class(filename=mean_arrays_path)
-        msg = "✅ Mean prototypes plotted. Enable Otsu binarization if \
-            you want to adjust."
+        msg = (
+            "✅ Mean prototypes plotted. Enable Otsu binarization if "
+            "you want to adjust."
+        )
         return fig, msg, gr.update(visible=True), gr.update(visible=False)
 
     def toggle_mean_otsu_binarization(use_otsu, threshold):

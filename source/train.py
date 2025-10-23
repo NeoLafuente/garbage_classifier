@@ -120,7 +120,7 @@ def train_model(
     if track_carbon:
         tracker = EmissionsTracker(
             project_name="garbage_classifier_training",
-            output_dir=str(Path(model_save_path).parent),
+            output_dir=gvd(str(Path(model_save_path).parent)),
             log_level="warning",  # Reduce console output
         )
         tracker.start()
@@ -138,7 +138,7 @@ def train_model(
         model = GarbageClassifier(num_classes=data_module.num_classes, lr=lr)
 
         # Setup callback
-        loss_curve_callback = LossCurveCallback(save_dir=loss_curves_dir)
+        loss_curve_callback = LossCurveCallback(save_dir=gvd(loss_curves_dir))
 
         # Configure trainer
         if progress_callback:

@@ -92,8 +92,9 @@ def get_total_emissions(emissions_csv_path: str) -> dict:
         - 'car_distance_formatted': Human-readable car distance
         - 'num_sessions': Number of tracked sessions
     """
-    # Path(emissions_csv_path)
-    emissions_file = Path(gvd(emissions_csv_path))
+    emissions_file = Path(
+        f"{gvd(Path(emissions_csv_path).parent)}/emission.csv"
+    )
 
     if not emissions_file.exists():
         return {
@@ -160,7 +161,7 @@ def format_total_emissions_display(emissions_csv_path: str) -> str:
     str
         Formatted HTML string for display
     """
-    data = get_total_emissions(gvd(emissions_csv_path))
+    data = get_total_emissions(emissions_csv_path)
 
     output_string = f"""\
         <div style="display: flex; justify-content: space-between; \

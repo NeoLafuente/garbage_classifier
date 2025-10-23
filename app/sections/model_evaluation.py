@@ -33,6 +33,7 @@ from source.predict import (
     predict_batch,
     load_model_for_inference
 )
+from source.utils.config import get_valid_dir as gvd
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -110,7 +111,7 @@ def is_cache_valid(cache_file, model_path):
         return False
 
     # TODO: gvd(model_path.parent)
-    if not Path(model_path).exists():
+    if model_path is None or not Path(model_path).exists():
         return False
 
     cache_time = cache_file.stat().st_mtime
@@ -459,7 +460,7 @@ def get_metrics_path_for_model(model_choice):
     latest trained model uses the configured loss curves path.
     """
     if model_choice == "Best Model (Provided)":
-        return Path("models/best/performance/loss_curves/metrics.json")
+        return Path(gvd("models/best/performance/loss_curves")) / "metrics.json"
     else:
         return Path(cfg.LOSS_CURVES_PATH) / "metrics.json"
 

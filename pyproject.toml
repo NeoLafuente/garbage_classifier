@@ -1,6 +1,6 @@
 [project]
 name = "garbage_classifier"
-version = "0.1.11"
+version = "0.1.21"
 description = "Finetunned ResNet18 for garbage image classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -71,7 +71,6 @@ source = ["data/raw/sample.jpg"]
 where = ["."]
 include = ["source*", "app*"]
 exclude = [
-    "data*",
     "models*",
     "reports*",
     "notebooks*",
