@@ -78,7 +78,7 @@ class GarbageModelAnalyzer:
 
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-        metadata_path = gvd(Path(cfg.DATASET_PATH).parent) / "metadata.csv"
+        metadata_path = f"{gvd(Path(cfg.DATASET_PATH).parent)}/metadata.csv"
 
         if metadata_path.exists():
             self.df = pd.read_csv(metadata_path)

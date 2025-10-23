@@ -64,7 +64,7 @@ def get_available_models():
     models_dict = {
         "Best Model (Provided)": str(best_model_path),
         "Latest Trained Model": str(
-            cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
+            f"{cfg.WEIGHTS_DIR}/model_resnet18_garbage.ckpt"
         ),
     }
     return models_dict

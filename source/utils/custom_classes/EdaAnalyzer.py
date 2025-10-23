@@ -39,7 +39,7 @@ class EdaAnalyzer:
 
     def __init__(
         self,
-        root_path: str = "./data/raw2",
+        root_path: str = "./data/raw",
         dataset_name: str = "Garbage_Dataset_Classification",
     ):
         """
@@ -93,10 +93,10 @@ class EdaAnalyzer:
             If Kaggle credentials are not found at ~/.kaggle/kaggle.json.
         """
         print("Downloading dataset with curl...")
-
         cmd = f"curl -L -o {self.zip_file} {self.dataset_url}"
         print(cmd)
         os.system(cmd)
+        os.chmod(self.zip_file, 0o755)
 
         print("Extracting dataset...")
 
@@ -122,7 +122,7 @@ class EdaAnalyzer:
         -------
         None
         """
-        if not os.path.exists(self.dataset_path):
+        if not os.path.exists(self.metadata_path):
             self.download_with_curl()
         else:
             print(f"{self.dataset_path} already exists, nothing to do.")

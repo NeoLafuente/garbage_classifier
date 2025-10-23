@@ -104,7 +104,7 @@ def train_model(
     during training initialization and completion.
     """
 
-    create_directory_structure()
+    # create_directory_structure()
 
     # Use config defaults if not provided
     if max_epochs is None:

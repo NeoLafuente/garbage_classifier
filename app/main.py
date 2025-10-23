@@ -51,7 +51,7 @@ def get_emissions_path():
     checkpoint, as defined in the configuration.
     """
     # return Path(cfg.MODEL_PATH).parent / "emissions.csv"
-    return gvd(cfg.BEST_MODEL_DIR) / cfg.EMISSIONS_FILE 
+    return f"{gvd(cfg.BEST_MODEL_DIR)}/{cfg.EMISSIONS_FILE}"
 
 
 def update_carbon_display():

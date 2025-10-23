@@ -224,7 +224,7 @@ def ensure_model_downloaded() -> Path:
     >>> model_path = ensure_model_downloaded()
     >>> model = GarbageClassifier.load_from_checkpoint(model_path)
     """
-    model_path = get_valid_dir(BEST_MODEL_DIR) / MODEL_FILENAME
+    model_path = Path(f"{get_valid_dir(BEST_MODEL_DIR)}/{MODEL_FILENAME}")
 
     if not model_path.exists():
         print("🔍 Pretrained model not found locally.")
@@ -276,4 +276,4 @@ def get_emissions_path():
     checkpoint, as defined in the global configuration.
     """
     # return Path(cfg.MODEL_PATH).parent / "emissions.csv"
-    return get_valid_dir(BEST_MODEL_DIR) / EMISSIONS_FILE 
+    return Path(f"{get_valid_dir(BEST_MODEL_DIR)}/{EMISSIONS_FILE}")
