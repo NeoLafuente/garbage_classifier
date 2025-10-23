@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from PIL import Image
 from typing import Optional
 import cv2
+from source.utils.config import get_valid_dir as gvd
 
 
 class EdaAnalyzer:
@@ -38,7 +39,7 @@ class EdaAnalyzer:
 
     def __init__(
         self,
-        root_path: str = "./data/raw",
+        root_path: str = "./data/raw2",
         dataset_name: str = "Garbage_Dataset_Classification",
     ):
         """
@@ -56,11 +57,13 @@ class EdaAnalyzer:
         -------
         None
         """
-        self.root_path = root_path
-        self.dataset_path = os.path.join(root_path, dataset_name)
-        self.zip_file = os.path.join(root_path, "garbage-dataset.zip")
-        self.kaggle_url = "https://www.kaggle.com/\
-            api/v1/datasets/download/zlatan599/garbage-dataset-classification"
+        self.root_path = gvd(root_path)
+        self.dataset_path = gvd(os.path.join(self.root_path, dataset_name))
+        self.zip_file = os.path.join(self.root_path, "garbage-dataset.zip")
+        self.dataset_url = (
+            "https://github.com/NeoLafuente/garbage_classifier/"
+            "releases/download/v0.1.4/garbage-dataset.zip"
+        )
         self.metadata_path = os.path.join(self.dataset_path, "metadata.csv")
         self.df = None
 
@@ -91,15 +94,12 @@ class EdaAnalyzer:
         """
         print("Downloading dataset with curl...")
 
-        os.makedirs(os.path.expanduser("~/.kaggle"), exist_ok=True)
-        os.chmod(os.path.expanduser("~/.kaggle"), 0o700)
-
-        cmd = f"curl -L -o {self.zip_file} -u \
-            `jq -r .username ~/.kaggle/kaggle.json`:\
-                `jq -r .key ~/.kaggle/kaggle.json` {self.kaggle_url}"
+        cmd = f"curl -L -o {self.zip_file} {self.dataset_url}"
+        print(cmd)
         os.system(cmd)
 
         print("Extracting dataset...")
+
         with zipfile.ZipFile(self.zip_file, "r") as zip_ref:
             zip_ref.extractall(self.root_path)
 

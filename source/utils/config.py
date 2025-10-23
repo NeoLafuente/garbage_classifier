@@ -62,6 +62,12 @@ __docformat__ = "numpy"
 from pathlib import Path
 import requests
 from tqdm import tqdm
+from platformdirs import user_data_dir
+
+# ============================================
+# APP NAME
+# ============================================
+APP_NAME = "garbage_classifier"
 
 # ============================================
 # Project Structure
@@ -76,6 +82,13 @@ MODELS_DIR = PROJECT_ROOT / "models"
 RAW_DATA_DIR = DATA_DIR / "raw"
 DATASET_PATH = RAW_DATA_DIR / "Garbage_Dataset_Classification" / "images"
 SAMPLE_IMG_PATH = RAW_DATA_DIR / "sample.jpg"
+
+# ============================================
+# Gradio Paths
+# ============================================
+APP_DIR = PROJECT_ROOT / "app"
+SECTIONS_DIR = APP_DIR / "sections"
+CACHED_DATA_DIR = SECTIONS_DIR / "cached_data"
 
 # ============================================
 # Model Paths
@@ -237,39 +250,16 @@ def ensure_model_downloaded() -> Path:
     return MODEL_PATH
 
 
-def create_directory_structure() -> None:
+def get_valid_dir(local_path: str) -> Path:
     """
-    Create all necessary project directories if they don't exist.
-
-    Creates the following directory structure:
-    - data/raw/
-    - data/processed/
-    - data/interim/
-    - models/weights/
-    - models/best/
-    - models/performance/loss_curves/
-    - reports/figures/
-
-    Notes
-    -----
-    This function is idempotent - safe to call multiple times.
-
-    Examples
-    --------
-    >>> create_directory_structure()
-    >>> assert DATASET_PATH.parent.exists()
+    Devuelve la carpeta local si existe. 
+    Si no existe, usa la de platformdirs y la crea si hace falta.
     """
-    directories = [
-        DATA_DIR / "raw",
-        DATA_DIR / "processed",
-        DATA_DIR / "interim",
-        WEIGHTS_DIR,
-        BEST_MODEL_DIR,
-        LOSS_CURVES_PATH,
-        PROJECT_ROOT / "reports" / "figures",
-    ]
+    local_dir = Path(local_path)
 
-    for directory in directories:
-        directory.mkdir(parents=True, exist_ok=True)
-
-    print("✅ Directory structure created")
+    if local_dir.exists() and local_dir.is_dir():
+        return str(local_dir.resolve())
+    
+    fallback_dir = Path(user_data_dir(APP_NAME), local_path)
+    fallback_dir.mkdir(parents=True, exist_ok=True)
+    return str(fallback_dir.resolve())
