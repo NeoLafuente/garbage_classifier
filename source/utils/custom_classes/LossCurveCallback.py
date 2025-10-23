@@ -14,6 +14,7 @@ import json
 import matplotlib.pyplot as plt
 from pytorch_lightning.callbacks import Callback
 from source.utils import config as cfg
+from source.utils.config import get_valid_dir as gvd
 
 
 class LossCurveCallback(Callback):
@@ -67,7 +68,7 @@ class LossCurveCallback(Callback):
         """
 
         super().__init__()
-        self.save_dir = save_dir
+        self.save_dir = gvd(save_dir)
         os.makedirs(self.save_dir, exist_ok=True)
         self.train_losses = []
         self.train_accs = []

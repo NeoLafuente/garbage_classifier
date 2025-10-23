@@ -32,7 +32,8 @@ from app.sections.model_training import model_training_tab
 from app.sections.model_evaluation import model_evaluation_tab
 from source.utils import config as cfg
 from source.utils.carbon_utils import format_total_emissions_display
-from pathlib import Path
+from source.utils.config import get_valid_dir as gvd
+# from pathlib import Path
 
 
 def get_emissions_path():
@@ -49,7 +50,8 @@ def get_emissions_path():
     The emissions file is located in the same directory as the trained model
     checkpoint, as defined in the configuration.
     """
-    return Path(cfg.MODEL_PATH).parent / "emissions.csv"
+    # return Path(cfg.MODEL_PATH).parent / "emissions.csv"
+    return gvd(cfg.BEST_MODEL_DIR) / cfg.EMISSIONS_FILE 
 
 
 def update_carbon_display():

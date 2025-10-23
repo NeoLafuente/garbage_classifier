@@ -14,6 +14,7 @@ from torchvision import datasets, models
 from sklearn.model_selection import train_test_split
 import numpy as np
 from source.utils import config as cfg
+from source.utils.config import get_valid_dir as gvd
 
 
 class GarbageDataModule(pl.LightningDataModule):
@@ -90,7 +91,7 @@ class GarbageDataModule(pl.LightningDataModule):
 
         # Load full dataset
         full_dataset = datasets.ImageFolder(
-            cfg.DATASET_PATH, transform=self.transform
+            gvd(cfg.DATASET_PATH), transform=self.transform
         )
         targets = [label for _, label in full_dataset]
         self.num_classes = cfg.NUM_CLASSES

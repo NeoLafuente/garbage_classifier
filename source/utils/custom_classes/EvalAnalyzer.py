@@ -14,6 +14,7 @@ from sklearn.calibration import calibration_curve
 from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
 from source.utils.custom_classes.GarbageDataModule import GarbageDataModule
 from source.utils import config as cfg
+from source.utils.config import get_valid_dir as gvd
 
 
 class GarbageModelAnalyzer:
@@ -63,14 +64,21 @@ class GarbageModelAnalyzer:
         -------
         None
         """
-        self.dataset_path = dataset_path or os.path.join(
-            "..", "data", "raw", "sample_dataset"
-        )
-        self.performance_path = performance_path or \
-            "../reports/figures/performance/"
+        if dataset_path is None:
+            dataset_path = cfg.SAMPLE_DATASET_PATH
+        self.dataset_path = gvd(dataset_path)
+        
+        # os.path.join(
+        #     "..", "data", "raw", "sample_dataset"
+        # )
+
+        if performance_path is None:
+            performance_path = "../reports/figures/performance/"
+        self.performance_path = gvd(performance_path) 
+
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-        metadata_path = Path(cfg.DATASET_PATH).parent / "metadata.csv"
+        metadata_path = gvd(Path(cfg.DATASET_PATH).parent) / "metadata.csv"
 
         if metadata_path.exists():
             self.df = pd.read_csv(metadata_path)
@@ -106,7 +114,9 @@ class GarbageModelAnalyzer:
         Model is automatically set to evaluation mode and moved
         to the configured device.
         """
-        checkpoint_path = checkpoint_path or cfg.MODEL_PATH
+        if checkpoint_path is None:
+            checkpoint_path = cfg.MODEL_PATH
+        checkpoint_path = gvd(checkpoint_path)
         num_classes = num_classes or cfg.NUM_CLASSES
         print("Loading model...")
         self.model = GarbageClassifier.load_from_checkpoint(
@@ -140,7 +150,7 @@ class GarbageModelAnalyzer:
         self.data_module = GarbageDataModule(batch_size=batch_size)
         self.data_module.setup()
         file_names = []
-        for root, dirs, files in os.walk(cfg.DATASET_PATH):
+        for root, dirs, files in os.walk(gvd(cfg.DATASET_PATH)):
             for file in files:
                 file_names.append(file)
         self.df_subset = (
