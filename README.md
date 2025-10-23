@@ -1,65 +1,4 @@
 # Project Structure and Usage Guide
-## Project Organization
-```
-.
-├── data
-│   ├── interim
-│   ├── processed
-│   └── raw
-│       └── Garbage_Dataset_Classification
-│           ├── images
-│           │   ├── cardboard
-│           │   ├── glass
-│           │   ├── metal
-│           │   ├── paper
-│           │   ├── plastic
-│           │   └── trash
-│           └── metadata.csv
-├── docs
-│   ├── index.html
-│   ├── predict.html
-│   ├── search.js
-│   ├── train.html
-│   └── utils
-│       ├── config.html
-│       └── custom_classes
-│           ├── GarbageClassifier.html
-│           ├── GarbageDataModule.html
-│           └── LossCurveCallback.html
-├── models
-│   ├── performance
-│   │   └── loss_curves
-│   └── weights
-├── notebooks
-│   ├── create_sample_dataset.ipynb
-│   ├── dataset_exploration.ipynb
-│   └── performance_analysis.ipynb
-├── pyproject.toml
-├── README.md
-├── reports
-│   ├── compiled
-│   ├── figures
-│   │   ├── EDA
-│   │   └── performance
-│   └── main.tex
-├── scripts
-│   └── generate_docs.py
-└── source
-    ├── predict.py
-    ├── train.py
-    └── utils
-        ├── config.py
-        ├── custom_classes
-        │   ├── GarbageClassifier.py
-        │   ├── GarbageDataModule.py
-        │   ├── __init__.py
-        │   └── LossCurveCallback.py
-        └── __init__.py
-```
-
-`dummy.txt` files are just placeholders so GitHub keeps the folder structure.
-
----
 ## Setup
 This project uses **[uv](https://github.com/astral-sh/uv)** for dependency management.  
 1. Install `uv`:
@@ -166,3 +105,63 @@ uv run scripts/generate_docs.py
   - Dataset paths and class names
   - Model hyperparameters (batch size, learning rate, epochs)
   - Training and validation split ratios
+---
+## Project Organization
+```
+.
+├── data
+│   ├── interim
+│   ├── processed
+│   └── raw
+│       └── Garbage_Dataset_Classification
+│           ├── images
+│           │   ├── cardboard
+│           │   ├── glass
+│           │   ├── metal
+│           │   ├── paper
+│           │   ├── plastic
+│           │   └── trash
+│           └── metadata.csv
+├── docs
+│   ├── index.html
+│   ├── predict.html
+│   ├── search.js
+│   ├── train.html
+│   └── utils
+│       ├── config.html
+│       └── custom_classes
+│           ├── GarbageClassifier.html
+│           ├── GarbageDataModule.html
+│           └── LossCurveCallback.html
+├── models
+│   ├── performance
+│   │   └── loss_curves
+│   └── weights
+├── notebooks
+│   ├── create_sample_dataset.ipynb
+│   ├── dataset_exploration.ipynb
+│   └── performance_analysis.ipynb
+├── pyproject.toml
+├── README.md
+├── reports
+│   ├── compiled
+│   ├── figures
+│   │   ├── EDA
+│   │   └── performance
+│   └── main.tex
+├── scripts
+│   └── generate_docs.py
+└── source
+    ├── predict.py
+    ├── train.py
+    └── utils
+        ├── config.py
+        ├── custom_classes
+        │   ├── GarbageClassifier.py
+        │   ├── GarbageDataModule.py
+        │   ├── __init__.py
+        │   └── LossCurveCallback.py
+        └── __init__.py
+```
+
+`dummy.txt` files are just placeholders so GitHub keeps the folder structure.
