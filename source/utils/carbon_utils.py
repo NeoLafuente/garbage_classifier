@@ -4,6 +4,7 @@ Utilities for carbon emissions calculations and conversions.
 """
 from pathlib import Path
 import pandas as pd
+from source.utils.config import get_valid_dir as gvd
 
 
 def kg_co2_to_car_distance(kg_co2: float) -> dict:
@@ -91,7 +92,8 @@ def get_total_emissions(emissions_csv_path: str) -> dict:
         - 'car_distance_formatted': Human-readable car distance
         - 'num_sessions': Number of tracked sessions
     """
-    emissions_file = Path(emissions_csv_path)
+    # Path(emissions_csv_path)
+    emissions_file = Path(gvd(emissions_csv_path))
 
     if not emissions_file.exists():
         return {
@@ -158,7 +160,7 @@ def format_total_emissions_display(emissions_csv_path: str) -> str:
     str
         Formatted HTML string for display
     """
-    data = get_total_emissions(emissions_csv_path)
+    data = get_total_emissions(gvd(emissions_csv_path))
 
     output_string = f"""\
         <div style="display: flex; justify-content: space-between; \

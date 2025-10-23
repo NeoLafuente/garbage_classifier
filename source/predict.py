@@ -15,7 +15,7 @@ from PIL import Image
 from source.utils import config as cfg
 from source.utils.custom_classes.GarbageClassifier import GarbageClassifier
 from codecarbon import EmissionsTracker
-
+from source.utils.config import get_valid_dir as gvd
 
 # ========================
 # CORE PREDICTION FUNCTIONS (importable)
@@ -147,7 +147,7 @@ def predict_image(
     if track_carbon:
         tracker = EmissionsTracker(
             project_name="garbage_classifier_inference",
-            output_dir=str(Path(cfg.MODEL_PATH).parent),
+            output_dir=gvd(cfg.BEST_MODEL_DIR),
             log_level="warning",
         )
         tracker.start()
@@ -283,7 +283,7 @@ def predict_batch(
     if track_carbon:
         tracker = EmissionsTracker(
             project_name="garbage_classifier_batch_inference",
-            output_dir=str(Path(cfg.MODEL_PATH).parent),
+            output_dir=gvd(cfg.BEST_MODEL_DIR),
             log_level="warning",
         )
         tracker.start()

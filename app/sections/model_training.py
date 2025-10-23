@@ -26,29 +26,13 @@ __docformat__ = "numpy"
 import gradio as gr
 from source.train import train_model
 from source.utils import config as cfg
+from source.utils.config import get_valid_dir as gvd
 from source.utils.carbon_utils import (
     format_car_distance_meters_only,
     format_total_emissions_display,
 )
 from pathlib import Path
 import pandas as pd
-
-
-def get_emissions_path():
-    """
-    Get the path to the emissions CSV file.
-
-    Returns
-    -------
-    pathlib.Path
-        Path object pointing to the emissions.csv file in the model directory.
-
-    Notes
-    -----
-    The emissions file is stored in the same directory as the trained model
-    checkpoint, as defined in the global configuration.
-    """
-    return Path(cfg.MODEL_PATH).parent / "emissions.csv"
 
 
 def load_emissions_history():
@@ -75,7 +59,7 @@ def load_emissions_history():
     If the emissions file doesn't exist or cannot be read, returns a
     DataFrame with an appropriate message.
     """
-    emissions_file = get_emissions_path()
+    emissions_file = cfg.get_emissions_path()
     if emissions_file.exists():
         try:
             df = pd.read_csv(emissions_file)
@@ -245,7 +229,8 @@ def run_training(
                 "\n*Based on average European car emissions of 120g CO₂/km*"
             )
 
-        model_save_path = cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
+        model_save_path = gvd(cfg.WEIGHTS_DIR) / cfg.MODEL_FILENAME #"model_resnet18_garbage.ckpt"
+        loss_curves_path = gvd(cfg.LOSS_CURVES_PATH)
 
         final_message = (
             f"✅ **Training Complete!**\n\n"
@@ -256,7 +241,7 @@ def run_training(
             f"{metrics_info}"
             f"\n### Output\n"
             f"- **Model saved at:** `{model_save_path}`\n"
-            f"- **Loss curves saved at:** `{cfg.LOSS_CURVES_PATH}`"
+            f"- **Loss curves saved at:** `{loss_curves_path}`"
             f"{emissions_info}"
         )
 
@@ -264,13 +249,13 @@ def run_training(
         emissions_df = load_emissions_history()
 
         # Update carbon display
-        carbon_text = format_total_emissions_display(get_emissions_path())
+        carbon_text = format_total_emissions_display(cfg.get_emissions_path())
 
         return final_message, emissions_df, carbon_text
 
     except Exception as e:
         error_msg = f"❌ **Training Failed!**\n\n**Error:** {str(e)}"
-        carbon_text = format_total_emissions_display(get_emissions_path())
+        carbon_text = format_total_emissions_display(cfg.get_emissions_path())
         return error_msg, load_emissions_history(), carbon_text
 
 

@@ -41,23 +41,6 @@ import pandas as pd
 import pickle
 
 
-def get_emissions_path():
-    """
-    Get the path to the emissions CSV file.
-
-    Returns
-    -------
-    pathlib.Path
-        Path object pointing to the emissions.csv file in the model directory.
-
-    Notes
-    -----
-    The emissions file is stored in the same directory as the trained model
-    checkpoint, as defined in the global configuration.
-    """
-    return Path(cfg.MODEL_PATH).parent / "emissions.csv"
-
-
 def get_available_models():
     """
     Get dictionary of available trained models.
@@ -767,7 +750,7 @@ def predict_single_image_gradio(
             result_text += f"- **🚗 Car equivalent:** \
                 {emissions['car_distance_formatted']} driven\n"
             updated_carbon_display = format_total_emissions_display(
-                get_emissions_path()
+                cfg.get_emissions_path()
             )
 
         return fig, result_text, updated_carbon_display
@@ -889,7 +872,7 @@ def predict_folder_gradio(
             result_text += f"- **Avg per image:** \
                 {emissions['emissions_per_image_g']:.4f}g CO₂eq\n"
             updated_carbon_display = format_total_emissions_display(
-                get_emissions_path()
+                cfg.get_emissions_path()
             )
 
         return df_results, result_text, updated_carbon_display

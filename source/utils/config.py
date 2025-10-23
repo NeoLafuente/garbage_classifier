@@ -82,7 +82,7 @@ MODELS_DIR = PROJECT_ROOT / "models"
 RAW_DATA_DIR = DATA_DIR / "raw"
 DATASET_PATH = RAW_DATA_DIR / "Garbage_Dataset_Classification" / "images"
 SAMPLE_IMG_PATH = RAW_DATA_DIR / "sample.jpg"
-
+SAMPLE_DATASET_PATH = RAW_DATA_DIR / "sample_dataset"
 # ============================================
 # Gradio Paths
 # ============================================
@@ -100,6 +100,7 @@ LOSS_CURVES_PATH = PERFORMANCE_DIR / "loss_curves"
 
 MODEL_FILENAME = "model_resnet18_garbage.ckpt"
 MODEL_PATH = BEST_MODEL_DIR / MODEL_FILENAME
+EMISSIONS_FILE = "emissions.csv"
 
 # ============================================
 # Model Download Configuration
@@ -168,7 +169,7 @@ def download_file(url: str, destination: Path, chunk_size: int = 8192) -> None:
     """
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"📥 Downloading from GitHub Releases...")
+    print("📥 Downloading from GitHub Releases...")
     print(f"   URL: {url}")
     print(f"   Destination: {destination}")
 
@@ -223,31 +224,27 @@ def ensure_model_downloaded() -> Path:
     >>> model_path = ensure_model_downloaded()
     >>> model = GarbageClassifier.load_from_checkpoint(model_path)
     """
-    if not MODEL_PATH.exists():
+    model_path = get_valid_dir(BEST_MODEL_DIR) / MODEL_FILENAME
+
+    if not model_path.exists():
         print("🔍 Pretrained model not found locally.")
-        print(f"   Expected location: {MODEL_PATH}")
+        print(f"   Expected location: {model_path}")
 
         try:
-            download_file(MODEL_URL, MODEL_PATH)
+            download_file(MODEL_URL, model_path)
         except requests.HTTPError as e:
             print(f"\n❌ Failed to download model: {e}")
-            print(f"\n💡 Please:")
-            print(f"   1. Create a GitHub Release with tag '{MODEL_VERSION}'")
-            print(f"   2. Upload '{MODEL_FILENAME}' to the release")
-            print(f"   3. Or download manually from:")
-            print(f"      {MODEL_URL}")
-            print(f"   4. Save to: {MODEL_PATH}")
-            raise FileNotFoundError(f"Model not found: {MODEL_PATH}") from e
+            raise FileNotFoundError(f"Model not found: {model_path}") from e
         except requests.RequestException as e:
             print(f"\n❌ Network error: {e}")
-            print(f"\n💡 Please check your internet connection or download manually:")
+            print("\n💡 Please check your internet connection or download manually:")
             print(f"   URL: {MODEL_URL}")
-            print(f"   Destination: {MODEL_PATH}")
+            print(f"   Destination: {model_path}")
             raise
     else:
-        print(f"✅ Model found: {MODEL_PATH}")
+        print(f"✅ Model found: {model_path}")
 
-    return MODEL_PATH
+    return model_path
 
 
 def get_valid_dir(local_path: str) -> Path:
@@ -263,3 +260,20 @@ def get_valid_dir(local_path: str) -> Path:
     fallback_dir = Path(user_data_dir(APP_NAME), local_path)
     fallback_dir.mkdir(parents=True, exist_ok=True)
     return str(fallback_dir.resolve())
+
+def get_emissions_path():
+    """
+    Get the path to the emissions CSV file.
+
+    Returns
+    -------
+    pathlib.Path
+        Path object pointing to the emissions.csv file in the model directory.
+
+    Notes
+    -----
+    The emissions file is stored in the same directory as the trained model
+    checkpoint, as defined in the global configuration.
+    """
+    # return Path(cfg.MODEL_PATH).parent / "emissions.csv"
+    return get_valid_dir(BEST_MODEL_DIR) / EMISSIONS_FILE 
