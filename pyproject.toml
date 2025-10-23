@@ -1,6 +1,6 @@
 [project]
 name = "garbage_classifier"
-version = "0.1.4"
+version = "0.1.5"
 description = "Finetunned ResNet18 for garbage image classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -59,7 +59,10 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
+
+[tool.setuptools.package-data]
+source = ["data/raw/sample.jpg"]
 
 [tool.setuptools.exclude-package-data]
 "*" = ["*.ckpt"]
