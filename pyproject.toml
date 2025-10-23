@@ -1,6 +1,6 @@
 [project]
 name = "garbage_classifier"
-version = "0.1.0"
+version = "0.1.4"
 description = "Finetunned ResNet18 for garbage image classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
