@@ -22,6 +22,7 @@ import pytorch_lightning as pl
 from pathlib import Path
 from codecarbon import EmissionsTracker
 from source.utils import config as cfg
+from source.utils.config import get_valid_dir as gvd
 from source.utils.carbon_utils import (
     kg_co2_to_car_distance,
     format_car_distance
@@ -110,9 +111,9 @@ def train_model(
     if max_epochs is None:
         max_epochs = cfg.MAX_EPOCHS
     if model_save_path is None:
-        model_save_path = cfg.WEIGHTS_DIR / "model_resnet18_garbage.ckpt"
+        model_save_path = f"{gvd(cfg.WEIGHTS_DIR)}/model_resnet18_garbage.ckpt"
     if loss_curves_dir is None:
-        loss_curves_dir = cfg.LOSS_CURVES_PATH
+        loss_curves_dir = gvd(cfg.LOSS_CURVES_PATH)
 
     # Initialize emissions tracker
     emissions_data = None

@@ -229,7 +229,7 @@ def run_training(
                 "\n*Based on average European car emissions of 120g CO₂/km*"
             )
 
-        model_save_path = gvd(cfg.WEIGHTS_DIR) / cfg.MODEL_FILENAME #"model_resnet18_garbage.ckpt"
+        model_save_path = f"{gvd(cfg.WEIGHTS_DIR)}/{cfg.MODEL_FILENAME}" #"model_resnet18_garbage.ckpt"
         loss_curves_path = gvd(cfg.LOSS_CURVES_PATH)
 
         final_message = (

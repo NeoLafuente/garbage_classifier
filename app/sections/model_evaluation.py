@@ -109,6 +109,7 @@ def is_cache_valid(cache_file, model_path):
     if not cache_file.exists():
         return False
 
+    # TODO: gvd(model_path.parent)
     if not Path(model_path).exists():
         return False
 
