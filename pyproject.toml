@@ -1,6 +1,6 @@
 [project]
 name = "garbage_classifier"
-version = "0.1.0"
+version = "0.1.3"
 description = "Finetunned ResNet18 for garbage image classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -24,8 +24,7 @@ dependencies = [
     "codecarbon>=3.0.7",
     "opencv-python>=4.11.0.86",
     "requests>=2.31.0",
-    "tqdm>=4.66.0",
-    "twine>=6.2.0",
+    "tqdm>=4.66.0"
 ]
 authors = [
 	{name = "Melchor Lafuente"},
@@ -60,22 +59,23 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.ckpt"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["source*", "app*"]
 exclude = [
     "data*",
+    "models*",
     "reports*",
     "notebooks*",
     "scripts*",
     "docs*",
     "*.egg-info",
 ]
-
-[tool.setuptools.package-data]
-"*" = ["*.ckpt"]
 
 [project.scripts]
 garbage-train = "source.train:main"

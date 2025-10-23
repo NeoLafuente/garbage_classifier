@@ -1,3 +1,7 @@
 include README.md
 include LICENSE
-recursive-include models/best *.ckpt
+exclude models/**
+prune models
+global-exclude *.ckpt
+global-exclude *.pt
+global-exclude *.pth
