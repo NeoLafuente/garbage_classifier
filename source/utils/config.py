@@ -248,7 +248,7 @@ def ensure_model_downloaded() -> Path:
             raise FileNotFoundError(f"Model not found: {model_path}") from e
         except requests.RequestException as e:
             print(f"\n❌ Network error: {e}")
-            print("\n💡 Please check your internet connection or download manually:")
+            print("\n💡 Check your internet connection or download manually:")
             print(f"   URL: {MODEL_URL}")
             print(f"   Destination: {model_path}")
             raise
@@ -274,17 +274,18 @@ def ensure_model_downloaded() -> Path:
 
 def get_valid_dir(local_path: str) -> Path:
     """
-    Devuelve la carpeta local si existe. 
+    Devuelve la carpeta local si existe.
     Si no existe, usa la de platformdirs y la crea si hace falta.
     """
     local_dir = Path(local_path)
 
     if local_dir.exists() and local_dir.is_dir():
         return str(local_dir.resolve())
-    
+
     fallback_dir = Path(user_data_dir(APP_NAME), local_path)
     fallback_dir.mkdir(parents=True, exist_ok=True)
     return str(fallback_dir.resolve())
+
 
 def get_emissions_path():
     """

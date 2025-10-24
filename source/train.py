@@ -258,7 +258,7 @@ def main():
     """
     print("Starting training with default configuration...")
     result = train_model()
-    
+
     if result["emissions"]:
         print(
             f"\n🌍 Total carbon footprint: "
@@ -268,7 +268,7 @@ def main():
             f"🚗 Equivalent to driving: "
             f"{result['emissions']['car_distance_formatted']}"
         )
-    
+
     if result["metrics"]:
         print("\n📊 Final Metrics:")
         if result["metrics"].get("train_acc") is not None:

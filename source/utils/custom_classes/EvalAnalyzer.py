@@ -67,14 +67,14 @@ class GarbageModelAnalyzer:
         if dataset_path is None:
             dataset_path = cfg.SAMPLE_DATASET_PATH
         self.dataset_path = gvd(dataset_path)
-        
+
         # os.path.join(
         #     "..", "data", "raw", "sample_dataset"
         # )
 
         if performance_path is None:
             performance_path = "../reports/figures/performance/"
-        self.performance_path = gvd(performance_path) 
+        self.performance_path = gvd(performance_path)
 
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
