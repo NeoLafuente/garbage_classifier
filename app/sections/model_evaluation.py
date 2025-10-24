@@ -68,10 +68,6 @@ def get_available_models():
             f"{gvd(cfg.WEIGHTS_DIR)}/model_resnet18_garbage.ckpt"
         ),
     }
-    print("="*60)
-    print(models_dict["Best Model (Provided)"])
-    print(models_dict["Latest Trained Model"])
-    print("="*60)
     return models_dict
 
 
@@ -188,7 +184,7 @@ def generate_confusion_matrix(
     regenerating.
     is_cache_valid : Cache validation logic
     """
-    # global confusion_matrices_state # TODO: Revert this (uncomment)
+    global confusion_matrices_state # TODO: Revert this (uncomment)
 
     if not model_choice:
         return None, "Please select a model first", gr.update(visible=False)
@@ -345,7 +341,7 @@ def toggle_confusion_matrix(show_normalized):
     --------
     generate_confusion_matrix : Generate and cache both matrix versions
     """
-    # global confusion_matrices_state # TODO: Revert this (uncomment)
+    global confusion_matrices_state # TODO: Revert this (uncomment)
 
     if show_normalized:
         if confusion_matrices_state["normalized"] is not None:

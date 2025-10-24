@@ -78,7 +78,7 @@ class GarbageModelAnalyzer:
 
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-        metadata_path = f"{gvd(Path(cfg.DATASET_PATH).parent)}/metadata.csv"
+        metadata_path = Path(f"{gvd(Path(cfg.DATASET_PATH).parent)}/metadata.csv")
 
         if metadata_path.exists():
             self.df = pd.read_csv(metadata_path)
@@ -116,7 +116,11 @@ class GarbageModelAnalyzer:
         """
         if checkpoint_path is None:
             checkpoint_path = cfg.MODEL_PATH
-        checkpoint_path = gvd(checkpoint_path)
+        checkpoint_path = (
+            f"{gvd(str(Path(checkpoint_path).parent))}"
+            f"/"
+            f"{cfg.MODEL_PATH.split('/')[-1]}"
+        )
         num_classes = num_classes or cfg.NUM_CLASSES
         print("Loading model...")
         self.model = GarbageClassifier.load_from_checkpoint(
