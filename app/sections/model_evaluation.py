@@ -65,9 +65,13 @@ def get_available_models():
     models_dict = {
         "Best Model (Provided)": str(best_model_path),
         "Latest Trained Model": str(
-            f"{cfg.WEIGHTS_DIR}/model_resnet18_garbage.ckpt"
+            f"{gvd(cfg.WEIGHTS_DIR)}/model_resnet18_garbage.ckpt"
         ),
     }
+    print("="*60)
+    print(models_dict["Best Model (Provided)"])
+    print(models_dict["Latest Trained Model"])
+    print("="*60)
     return models_dict
 
 
@@ -107,14 +111,14 @@ def is_cache_valid(cache_file, model_path):
     >>> is_cache_valid(cache_file, model_path)
     False  # Cache doesn't exist or is older than model
     """
-    if not cache_file.exists():
+    if not Path(cache_file).exists():
         return False
 
     # TODO: gvd(model_path.parent)
     if model_path is None or not Path(model_path).exists():
         return False
 
-    cache_time = cache_file.stat().st_mtime
+    cache_time = Path(cache_file).stat().st_mtime
     model_time = Path(model_path).stat().st_mtime
 
     print(cache_file, model_path)
@@ -462,7 +466,7 @@ def get_metrics_path_for_model(model_choice):
     if model_choice == "Best Model (Provided)":
         return Path(gvd("models/best/performance/loss_curves")) / "metrics.json"
     else:
-        return Path(cfg.LOSS_CURVES_PATH) / "metrics.json"
+        return Path(gvd(cfg.LOSS_CURVES_PATH)) / "metrics.json"
 
 
 def load_loss_curves(model_choice):
@@ -497,7 +501,7 @@ def load_loss_curves(model_choice):
     get_metrics_path_for_model : Determine metrics file location
     """
     try:
-        metrics_path = get_metrics_path_for_model(model_choice)
+        metrics_path = Path(get_metrics_path_for_model(model_choice))
 
         if not metrics_path.exists():
             return (
@@ -581,7 +585,7 @@ def load_accuracy_curves(model_choice):
     get_metrics_path_for_model : Determine metrics file location
     """
     try:
-        metrics_path = get_metrics_path_for_model(model_choice)
+        metrics_path = Path(get_metrics_path_for_model(model_choice))
 
         if not metrics_path.exists():
             return (
