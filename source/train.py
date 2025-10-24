@@ -120,7 +120,7 @@ def train_model(
     if track_carbon:
         tracker = EmissionsTracker(
             project_name="garbage_classifier_training",
-            output_dir=gvd(str(Path(model_save_path).parent)),
+            output_dir=gvd(cfg.BEST_MODEL_DIR),
             log_level="warning",  # Reduce console output
         )
         tracker.start()

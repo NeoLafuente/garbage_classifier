@@ -93,7 +93,7 @@ def get_total_emissions(emissions_csv_path: str) -> dict:
         - 'num_sessions': Number of tracked sessions
     """
     emissions_file = Path(
-        f"{gvd(Path(emissions_csv_path).parent)}/emission.csv"
+        f"{gvd(Path(emissions_csv_path).parent)}/emissions.csv"
     )
 
     if not emissions_file.exists():

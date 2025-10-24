@@ -31,7 +31,6 @@ from source.utils.carbon_utils import (
     format_car_distance_meters_only,
     format_total_emissions_display,
 )
-from pathlib import Path
 import pandas as pd
 
 
@@ -63,6 +62,13 @@ def load_emissions_history():
     if emissions_file.exists():
         try:
             df = pd.read_csv(emissions_file)
+
+            # Only show trainig emissions
+            if "project_name" in df.columns:
+                df = df[df["project_name"] == "garbage_classifier_training"].copy()
+
+            if df.empty:
+                return pd.DataFrame({"Info": ["No training history yet"]})
 
             # Select and rename columns with units
             column_mapping = {

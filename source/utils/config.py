@@ -267,7 +267,7 @@ def ensure_model_downloaded() -> Path:
                 "cpu_count,cpu_model,gpu_count,gpu_model,longitude,latitude,"
                 "ram_total_size,tracking_mode,on_cloud,pue"
             )
-            file.write(header)
+            file.write(header + "\n")
 
     return model_path
 
